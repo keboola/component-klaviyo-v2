@@ -91,13 +91,14 @@
           "type": "boolean",
           "default": true,
           "options": {
-            "grid_columns": 3
+            "grid_columns": 3,
+            "hidden": true
           }
         }
       }
     },
     "campaigns_settings": {
-      "title": "Campaigns : Additional Options",
+      "title": "Campaigns - Additional Options",
       "type": "object",
       "propertyOrder": 20,
       "options": {
@@ -116,7 +117,7 @@
       }
     },
     "catalogs_settings": {
-      "title": "Catalogs : Additional Options",
+      "title": "Catalogs - Additional Options",
       "type": "object",
       "propertyOrder": 30,
       "options": {
@@ -135,7 +136,7 @@
       }
     },
     "events_settings": {
-      "title": "Events : Additional Options",
+      "title": "Events - Additional Options",
       "type": "object",
       "propertyOrder": 40,
       "options": {
@@ -161,13 +162,13 @@
       }
     },
     "flows_settings": {
-      "title": "Flows : Additional Options",
+      "title": "Flows - Additional Options",
       "type": "object",
       "propertyOrder": 50,
       "options": {
+        "hidden": true,
         "dependencies": {
-          "flows_hidden": "true",
-          "hidden": true
+          "flows_hidden": "true"
         }
       },
       "properties": {
@@ -181,7 +182,7 @@
       }
     },
     "profiles_settings": {
-      "title": "Profiles : Additional Options",
+      "title": "Profiles - Additional Options",
       "type": "object",
       "propertyOrder": 60,
       "options": {

@@ -84,7 +84,6 @@ class Component(ComponentBase):
         params = self.configuration.parameters
 
         # TODO Validate event date from and date to, and other things before downloading data. Fail first
-        # TODO Readme
         # TODO Normalize_column_names
 
         api_token = params.get(KEY_API_TOKEN)
