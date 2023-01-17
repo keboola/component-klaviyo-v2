@@ -83,11 +83,10 @@ class Component(ComponentBase):
 
         params = self.configuration.parameters
 
-        # TODO Validate event date from and date to, and other things before downloading data. Fail first
-        # TODO Normalize_column_names
-
         api_token = params.get(KEY_API_TOKEN)
         self.client = KlaviyoClient(api_token=api_token)
+
+        self._validate_user_parameters()
 
         objects = params.get(KEY_OBJECTS)
 
@@ -227,6 +226,35 @@ class Component(ComponentBase):
             self.new_state[object_name] = copy.deepcopy(writer.fieldnames)
             table_definition.columns = copy.deepcopy(writer.fieldnames)
             self.write_manifest(table_definition)
+
+    def _validate_user_parameters(self):
+        # Validate Date From and Date for events, if events are to be downloaded
+        params = self.configuration.parameters
+        objects = params.get(KEY_OBJECTS)
+        event_settings = params.get(KEY_EVENTS_SETTINGS)
+        if event_settings and objects.get("events"):
+            logging.info("Validating Event parameters...")
+            self._parse_date(event_settings.get(KEY_DATE_FROM))
+            self._parse_date(event_settings.get(KEY_DATE_TO))
+            logging.info("Event parameters are valid")
+
+        # Validate if segment ids for profile fetching are valid
+        profile_settings = params.get(KEY_PROFILES_SETTINGS, {})
+        profile_mode = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE)
+        if profile_mode == "fetch_by_segment":
+            logging.info("Validating Profile fetching parameters...")
+            segments = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, ""))
+            for segment_id in segments:
+                self.client.get_segment(segment_id)
+            logging.info("Profile fetching parameters are valid")
+
+        # Validate if list ids for profile fetching are valid
+        if profile_mode == "fetch_by_list":
+            logging.info("Validating Profile fetching parameters...")
+            lists = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, ""))
+            for list_id in lists:
+                self.client.get_list(list_id)
+            logging.info("Profile fetching parameters are valid")
 
 
 if __name__ == "__main__":

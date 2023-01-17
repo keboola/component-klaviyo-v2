@@ -40,6 +40,9 @@ class KlaviyoClient:
     def get_lists(self) -> Generator:
         return self._paginate_cursor_endpoint(self.client.Lists.get_lists)
 
+    def get_list(self, list_id):
+        return self.client.Lists.get_list(list_id)
+
     def get_list_profiles(self, list_id: str) -> Generator:
         return self._paginate_cursor_endpoint(self.client.Lists.get_list_profiles, list_id=list_id)
 
@@ -48,6 +51,9 @@ class KlaviyoClient:
 
     def get_segments(self) -> Generator:
         return self._paginate_cursor_endpoint(self.client.Segments.get_segments)
+
+    def get_segment(self, segment_id):
+        return self.client.Segments.get_segment(segment_id)
 
     def get_segment_profiles(self, segment_id: str) -> Generator:
         return self._paginate_cursor_endpoint(self.client.Segments.get_segment_profiles, segment_id=segment_id)
