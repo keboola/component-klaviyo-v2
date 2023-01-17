@@ -1,1 +1,1 @@
-Klaviyo Extractor long description
+This component uses the Klaviyo APIs to extract data on all objects from Klaviyo. 

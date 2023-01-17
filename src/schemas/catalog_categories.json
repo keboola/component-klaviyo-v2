@@ -1,0 +1,29 @@
+{
+  "name": "catalog_categories",
+  "description": "",
+  "primary_keys": [
+    "id"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "external_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "name",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

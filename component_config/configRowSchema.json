@@ -1,1 +1,236 @@
-{}
+{
+  "type": "object",
+  "title": "Configuration",
+  "id": "rootschema",
+  "required": [
+    "objects"
+  ],
+  "properties": {
+    "objects": {
+      "type": "object",
+      "title": "Endpoints",
+      "format": "grid-strict",
+      "propertyOrder": 10,
+      "properties": {
+        "campaigns": {
+          "title": "Campaigns",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "catalogs": {
+          "title": "Catalog Items",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "events": {
+          "title": "Events",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "metrics": {
+          "title": "Metrics",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "lists": {
+          "title": "Lists",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "segments": {
+          "title": "Segments",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "profiles": {
+          "title": "Profiles",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "flows": {
+          "title": "Flows",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3,
+            "hidden": true
+          }
+        },
+        "templates": {
+          "title": "Templates",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        }
+      }
+    },
+    "campaigns_settings": {
+      "title": "Campaigns : Additional Options",
+      "type": "object",
+      "propertyOrder": 20,
+      "options": {
+        "dependencies": {
+          "campaigns_hidden": "true"
+        }
+      },
+      "properties": {
+        "fetch_campaign_recipients": {
+          "title": "Fetch Campaign Recipients",
+          "propertyOrder": 20,
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "catalogs_settings": {
+      "title": "Catalogs : Additional Options",
+      "type": "object",
+      "propertyOrder": 30,
+      "options": {
+        "dependencies": {
+          "catalogs_hidden": "true"
+        }
+      },
+      "properties": {
+        "fetch_catalog_categories": {
+          "title": "Fetch Catalog Categories",
+          "propertyOrder": 10,
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "events_settings": {
+      "title": "Events : Additional Options",
+      "type": "object",
+      "propertyOrder": 40,
+      "options": {
+        "dependencies": {
+          "events_hidden": "true"
+        }
+      },
+      "properties": {
+        "date_from": {
+          "title": "Fetch Events From Date",
+          "propertyOrder": 10,
+          "type": "string",
+          "description": "Date from which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, yesterday, etc. You can also set this as last run, which will fetch data from the last run of the component.",
+          "default": "last run"
+        },
+        "date_to": {
+          "title": "Fetch Events To Date",
+          "propertyOrder": 20,
+          "type": "string",
+          "description": "Date to which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
+          "default": "now"
+        }
+      }
+    },
+    "flows_settings": {
+      "title": "Flows : Additional Options",
+      "type": "object",
+      "propertyOrder": 50,
+      "options": {
+        "dependencies": {
+          "flows_hidden": "true",
+          "hidden": true
+        }
+      },
+      "properties": {
+        "fetch_flows": {
+          "title": "Fetch Flow Actions",
+          "propertyOrder": 10,
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "profiles_settings": {
+      "title": "Profiles : Additional Options",
+      "type": "object",
+      "propertyOrder": 60,
+      "options": {
+        "dependencies": {
+          "profiles_hidden": "true"
+        }
+      },
+      "properties": {
+        "fetch_profiles_mode": {
+          "title": "Fetch Profiles Mode",
+          "propertyOrder": 10,
+          "required": true,
+          "type": "string",
+          "enum": [
+            "fetch_all",
+            "fetch_by_segment",
+            "fetch_by_list"
+          ],
+          "options": {
+            "enum_titles": [
+              "Fetch All Profiles",
+              "Fetch Profiles by Segment IDs",
+              "Fetch Profiles by List IDs"
+            ]
+          }
+        },
+        "fetch_profiles_by_list": {
+          "title": "List IDs",
+          "propertyOrder": 20,
+          "description": "Comma separated list of list IDs",
+          "type": "string",
+          "options": {
+            "dependencies": {
+              "fetch_profiles_mode": "fetch_by_list"
+            }
+          }
+        },
+        "fetch_profiles_by_segment": {
+          "title": "Segment IDs",
+          "propertyOrder": 30,
+          "description": "Comma separated list of segment IDs",
+          "type": "string",
+          "options": {
+            "dependencies": {
+              "fetch_profiles_mode": "fetch_by_segment"
+            }
+          }
+        }
+      }
+    }
+  }
+}

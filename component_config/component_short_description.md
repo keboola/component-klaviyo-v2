@@ -1,1 +1,1 @@
-Klaviyo Extractor short description
+A marketing automation platform, used primarily for email marketing and SMS marketing. 

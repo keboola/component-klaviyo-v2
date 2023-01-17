@@ -1,0 +1,14 @@
+{
+  "name": "campaign_excluded_list",
+  "description": "",
+  "primary_keys": [
+    "campaign_id"
+  ],
+  "fields": [
+    {
+      "name": "campaign_id",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

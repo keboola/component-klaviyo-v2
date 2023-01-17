@@ -1,0 +1,54 @@
+{
+  "name": "campaign_list",
+  "description": "",
+  "primary_keys": [
+    "campaign_id"
+  ],
+  "fields": [
+    {
+      "name": "campaign_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "id",
+      "description": "Id of list used for campaign",
+      "base_type": "STRING"
+    },
+    {
+      "name": "list_type",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "name",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "folder",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "person_count",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "object",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

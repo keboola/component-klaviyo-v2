@@ -1,0 +1,49 @@
+{
+  "name": "metric",
+  "description": "",
+  "primary_keys": [
+    "id"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "name",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "integration_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "integration_name",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "integration_object",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "integration_category",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

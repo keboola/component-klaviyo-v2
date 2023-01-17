@@ -1,0 +1,64 @@
+{
+  "name": "catalog_item",
+  "description": "",
+  "primary_keys": [
+    "id"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "external_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "title",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "url",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "description",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "published",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "image_thumbnail_url",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "image_full_url",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "images",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

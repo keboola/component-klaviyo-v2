@@ -1,0 +1,34 @@
+{
+  "name": "event",
+  "description": "",
+  "primary_keys": [
+    "id"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "uuid",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "metric_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "profile_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "timestamp",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}
