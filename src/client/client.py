@@ -1,8 +1,8 @@
+import json
+import swagger_client
 from klaviyo_api import KlaviyoAPI  # new sdk with incomplete functionality
 from klaviyo_sdk import Client  # old sdk with all functionality
-
-from typing import Generator, Callable
-
+from typing import Generator, Callable, Dict
 from openapi_client.exceptions import OpenApiException
 
 BASE_URL = ""
@@ -41,7 +41,11 @@ class KlaviyoClient:
         return self._paginate_cursor_endpoint(self.client.Lists.get_lists)
 
     def get_list(self, list_id):
-        return self.client.Lists.get_list(list_id)
+        try:
+            return self.client.Lists.get_list(list_id)
+        except OpenApiException as api_exc:
+            error_message = self._process_error(api_exc)
+            raise KlaviyoClientException(error_message) from api_exc
 
     def get_list_profiles(self, list_id: str) -> Generator:
         return self._paginate_cursor_endpoint(self.client.Lists.get_list_profiles, list_id=list_id)
@@ -53,7 +57,11 @@ class KlaviyoClient:
         return self._paginate_cursor_endpoint(self.client.Segments.get_segments)
 
     def get_segment(self, segment_id):
-        return self.client.Segments.get_segment(segment_id)
+        try:
+            return self.client.Segments.get_segment(segment_id)
+        except OpenApiException as api_exc:
+            error_message = self._process_error(api_exc)
+            raise KlaviyoClientException(error_message) from api_exc
 
     def get_segment_profiles(self, segment_id: str) -> Generator:
         return self._paginate_cursor_endpoint(self.client.Segments.get_segment_profiles, segment_id=segment_id)
@@ -73,41 +81,92 @@ class KlaviyoClient:
         return self._paginate_offset_endpoint(self.old_client.Campaigns.get_campaign_recipients,
                                               campaign_id=campaign_id)
 
-    @staticmethod
-    def _paginate_page_count_endpoint(endpoint_func: Callable, **kwargs) -> Generator:
+    def _paginate_page_count_endpoint(self, endpoint_func: Callable, **kwargs) -> Generator:
         has_more = True
         page = 0
         while has_more:
-            campaign_page = endpoint_func(page=page, count=PAGE_COUNT_PAGINATION_PAGE_SIZE, **kwargs)
+            try:
+                campaign_page = endpoint_func(page=page, count=PAGE_COUNT_PAGINATION_PAGE_SIZE, **kwargs)
+            except swagger_client.rest.ApiException as api_exc:
+                error_message = self._process_error(api_exc)
+                raise KlaviyoClientException(error_message) from api_exc
             yield campaign_page.get("data")
             if campaign_page.get("total") <= (page + 1) * PAGE_COUNT_PAGINATION_PAGE_SIZE:
                 has_more = False
             page += 1
 
-    @staticmethod
-    def _paginate_offset_endpoint(endpoint_func: Callable, **kwargs) -> Generator:
-        current_page = endpoint_func(count=OFFSET_PAGINATION_PAGE_SIZE, **kwargs)
+    def _paginate_offset_endpoint(self, endpoint_func: Callable, **kwargs) -> Generator:
+        try:
+            current_page = endpoint_func(count=OFFSET_PAGINATION_PAGE_SIZE, **kwargs)
+        except swagger_client.rest.ApiException as api_exc:
+            error_message = self._process_error(api_exc)
+            raise KlaviyoClientException(error_message) from api_exc
         yield current_page.get("data")
 
         has_more = "next_offset" in current_page
         while has_more:
             next_offset = current_page.get("next_offset")
-            current_page = endpoint_func(count=OFFSET_PAGINATION_PAGE_SIZE, offset=next_offset, **kwargs)
+            try:
+                current_page = endpoint_func(count=OFFSET_PAGINATION_PAGE_SIZE, offset=next_offset, **kwargs)
+            except swagger_client.rest.ApiException as api_exc:
+                error_message = self._process_error(api_exc)
+                raise KlaviyoClientException(error_message) from api_exc
             yield current_page.get("data")
             if "next_offset" not in current_page:
                 has_more = False
 
-    @staticmethod
-    def _paginate_cursor_endpoint(endpoint_func: Callable, **kwargs) -> Generator:
+    def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Generator:
         try:
             current_page = endpoint_func(**kwargs)
         except OpenApiException as api_exc:
-            raise KlaviyoClientException(api_exc) from api_exc
+            error_message = self._process_error(api_exc)
+            raise KlaviyoClientException(error_message) from api_exc
         yield current_page.get("data")
 
         while next_page := current_page.get("links").get("next"):
             try:
                 current_page = endpoint_func(**kwargs, page_cursor=next_page)
             except OpenApiException as api_exc:
-                raise KlaviyoClientException(api_exc) from api_exc
+                error_message = self._process_error(api_exc)
+                raise KlaviyoClientException(error_message) from api_exc
             yield current_page.get("data")
+
+    def _process_error(self, api_exc: Exception) -> str:
+        try:
+            error_data = json.loads(api_exc.body)
+        except json.JSONDecodeError as exc:
+            raise KlaviyoClientException(f"Error Occurred. Failed to decode error : {api_exc.body}") from exc
+        if len(error_data.get('errors', [])) > 0:
+            error = error_data.get('errors')[0]
+            error_message = self._generate_error_message_v2_client(error)
+        elif "message" in error_data and "status" in error_data:
+            error_message = self._generate_error_message_v1_client(error_data)
+        else:
+            error_message = error_data
+        return error_message
+
+    @staticmethod
+    def _generate_error_message_v2_client(error_data: Dict) -> str:
+        error_detail = f"{error_data.get('title')} {error_data.get('detail')}"
+        if error_data.get('status') == 401:
+            error_name = f"Not Authorized Error ({error_data.get('status')})"
+        elif error_data.get('status') == 403:
+            error_name = f"Forbidden Error ({error_data.get('status')})"
+        elif error_data.get('status') == 404:
+            error_name = f"Not Found Error ({error_data.get('status')})"
+        else:
+            error_name = f"{error_data.get('code')} ({error_data.get('status')})"
+        return f"{error_name} : {error_detail}"
+
+    @staticmethod
+    def _generate_error_message_v1_client(error_data: Dict) -> str:
+        error_detail = error_data.get('message')
+        if error_data.get('status') == 401:
+            error_name = f"Not Authorized Error ({error_data.get('status')})"
+        elif error_data.get('status') == 403:
+            error_name = f"Forbidden Error ({error_data.get('status')})"
+        elif error_data.get('status') == 404:
+            error_name = f"Not Found Error ({error_data.get('status')})"
+        else:
+            error_name = f"({error_data.get('status')})"
+        return f"{error_name} : {error_detail}"

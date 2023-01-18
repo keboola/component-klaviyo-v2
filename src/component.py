@@ -11,7 +11,7 @@ from keboola.component.exceptions import UserException
 from keboola.component.dao import TableDefinition
 from keboola.utils.helpers import comma_separated_values_to_list
 
-from client import KlaviyoClient
+from client import KlaviyoClient, KlaviyoClientException
 from json_parser import FlattenJsonParser
 
 KEY_API_TOKEN = "#api_token"
@@ -241,7 +241,7 @@ class Component(ComponentBase):
         # Validate if segment ids for profile fetching are valid
         profile_settings = params.get(KEY_PROFILES_SETTINGS, {})
         profile_mode = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE)
-        if profile_mode == "fetch_by_segment":
+        if profile_mode == "fetch_by_segment" and objects.get("profiles"):
             logging.info("Validating Profile fetching parameters...")
             segments = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, ""))
             for segment_id in segments:
@@ -249,7 +249,7 @@ class Component(ComponentBase):
             logging.info("Profile fetching parameters are valid")
 
         # Validate if list ids for profile fetching are valid
-        if profile_mode == "fetch_by_list":
+        if profile_mode == "fetch_by_list" and objects.get("profiles"):
             logging.info("Validating Profile fetching parameters...")
             lists = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, ""))
             for list_id in lists:
@@ -262,6 +262,9 @@ if __name__ == "__main__":
         comp = Component()
         # this triggers the run method by default and is controlled by the configuration.action parameter
         comp.execute_action()
+    except KlaviyoClientException as exc:
+        logging.exception(exc)
+        exit(1)
     except UserException as exc:
         logging.exception(exc)
         exit(1)
