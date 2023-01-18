@@ -232,6 +232,57 @@
           }
         }
       }
-    }
+    },
+    "campaigns_hidden": {
+          "type": "string",
+          "watch": {
+            "campaigns_hidden": "rootschema.objects.campaigns"
+          },
+          "options": {
+            "hidden": true
+          },
+          "template": "{{campaigns_hidden}}"
+        },
+    "catalogs_hidden": {
+          "type": "string",
+          "watch": {
+            "catalogs_hidden": "rootschema.objects.catalogs"
+          },
+          "options": {
+            "hidden": true
+          },
+          "template": "{{catalogs_hidden}}"
+        },
+    "events_hidden": {
+          "type": "string",
+          "watch": {
+            "events_hidden": "rootschema.objects.events"
+          },
+          "options": {
+            "hidden": true
+          },
+          "template": "{{events_hidden}}"
+        },
+    "flows_hidden": {
+          "type": "string",
+          "watch": {
+            "flows_hidden": "rootschema.objects.flows"
+          },
+          "options": {
+            "hidden": true
+          },
+          "template": "{{flows_hidden}}"
+        },
+    "profiles_hidden": {
+          "type": "string",
+          "watch": {
+            "profiles_hidden": "rootschema.objects.profiles"
+          },
+          "options": {
+            "hidden": true
+          },
+          "template": "{{profiles_hidden}}"
+        }
+
   }
 }
