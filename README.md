@@ -14,22 +14,24 @@ Prerequisites
 to get your API Token:
 
 1. Log into your Klaviyo platform
-2. Your profile name (top right)
+2. Your profile name (bottom left)
 3. Account
 4. Settings
 5. API Keys
-6. Create API Key
+6. Create Private API Key with Read-Only privileges
+
+For more information follow [this guide on from Klaviyo](https://developers.klaviyo.com/en/docs/retrieve_api_credentials)
 
 Supported endpoints
 ===================
 
-- Campaigns
-- Catalogs
-- Segments
-- Lists
-- Profiles
-- Metrics
-- Events
+- [Campaigns](https://developers.klaviyo.com/en/v1-2/reference/get-campaigns)
+- [Catalogs](https://developers.klaviyo.com/en/reference/get_catalog_items)
+- [Segments](https://developers.klaviyo.com/en/reference/get_segments)
+- [Lists](https://developers.klaviyo.com/en/reference/get_lists)
+- [Profiles](https://developers.klaviyo.com/en/reference/get_profiles)
+- [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
+- [Events](https://developers.klaviyo.com/en/reference/get_events)
 
 If you need more endpoints, please submit your request to
 [ideas.keboola.com](https://ideas.keboola.com/)
@@ -39,36 +41,39 @@ Configuration
 
 ##Authorization configuration
 
-- API Token (#api_token) - [REQ] description
+- API Token (#api_token) - [REQ] API token generated following the steps in the Prerequisites
 
 ##Configuration
 
-- Endpoints (objects) - [REQ] description
-  - Campaigns (campaigns) - [OPT] description
-  - Catalog Items (catalogs) - [OPT] description
-  - Events (events) - [OPT] description
-  - Metrics (metrics) - [OPT] description
-  - Lists (lists) - [OPT] description
-  - Segments (segments) - [OPT] description
-  - Profiles (profiles) - [OPT] description
-  - Flows (flows) - [OPT] description
-  - Templates (templates) - [OPT] description
-- Campaigns : Additional Options (campaigns_settings) - [OPT] description
-  - Fetch Campaign Recipients (fetch_campaign_recipients) - [OPT] description
-- Catalogs : Additional Options (catalogs_settings) - [OPT] description
-  - Fetch Catalog Categories (fetch_catalog_categories) - [OPT] description
-- Events : Additional Options (events_settings) - [OPT] description
+- Endpoints (objects) - [REQ] Key value pair of Klaviyo objects and a boolean value to signify whether or not to extract them
+  - Campaigns (campaigns)
+  - Catalog Items (catalogs)
+  - Events (events)
+  - Metrics (metrics)
+  - Lists (lists)
+  - Segments (segments)
+  - Profiles (profiles)
+  - Flows (flows)
+  - Templates (templates)
+- Campaigns : Additional Options (campaigns_settings) - [OPT] Additional options if campaigns are being downloaded
+  - Fetch Campaign Recipients (fetch_campaign_recipients) - [OPT] Boolean value to indicate if campaign recipients should be extracted for each campaign
+- Catalogs : Additional Options (catalogs_settings) - [OPT] Additional options if catalogs are being downloaded
+  - Fetch Catalog Categories (fetch_catalog_categories) - [OPT] Boolean value to indicate if catalog categories should be fetched
+- Events : Additional Options (events_settings) - [OPT] Additional options if events are being downloaded
   - Fetch Events From Date (date_from) - [OPT] Date from which event data is downloaded. Either date in YYYY-MM-DD format
     or relative date string i.e. 5 days ago, 1 month ago, yesterday, etc. You can also set this as last run, which will
     fetch data from the last run of the component.
   - Fetch Events To Date (date_to) - [OPT] Date to which event data is downloaded. Either date in YYYY-MM-DD format or
     relative date string i.e. 5 days ago, 1 month ago, now, etc.
-- Flows : Additional Options (flows_settings) - [OPT] description
-  - Fetch Flow Actions (fetch_flows) - [OPT] description
-- Profiles : Additional Options (profiles_settings) - [OPT] description
-  - Fetch Profiles Mode (fetch_profiles_mode) - [OPT] description
-  - List IDs (fetch_profiles_by_list) - [OPT] Comma separated list of list IDs
-  - Segment IDs (fetch_profiles_by_segment) - [OPT] Comma separated list of segment IDs
+- Flows : Additional Options (flows_settings) - [OPT] Additional options if flows are being downloaded
+  - Fetch Flow Actions (fetch_flows) - [OPT] Boolean value to indicate if flow actions should be fetched
+- Profiles : Additional Options (profiles_settings) - [OPT] Additional options if profiles are being downloaded
+  - Fetch Profiles Mode (fetch_profiles_mode) - [OPT] either "fetch_all", "fetch_by_segment", "fetch_by_list". 
+"fetch_all" extracts all profiles.
+"fetch_by_list" extracts all profiles contained in specific lists, specified in the list of List IDs.
+"fetch_by_segment" extracts all profiles contained in specific segments, specified in the list of Segment IDs.        
+  - List IDs (fetch_by_list) - [OPT] Comma separated list of list IDs
+  - Segment IDs (fetch_by_segment) - [OPT] Comma separated list of segment IDs
 
 Sample Configuration
 =============
@@ -97,9 +102,6 @@ Sample Configuration
     "events_settings": {
       "date_from": "last run",
       "date_to": "now"
-    },
-    "flows_settings": {
-      "fetch_flows": true
     },
     "profiles_settings": {
       "fetch_profiles_mode": "fetch_by_segment",

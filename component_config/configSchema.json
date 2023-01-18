@@ -9,6 +9,7 @@
       "type": "string",
       "title": "API Token",
       "propertyOrder": 1,
+      "description" : "Private API Key with Read-Only access to all Klaviyo Objects",
       "format": "password"
     }
   }
