@@ -212,22 +212,40 @@
         "fetch_profiles_by_list": {
           "title": "List IDs",
           "propertyOrder": 20,
-          "description": "Comma separated list of list IDs",
-          "type": "string",
+          "description": "Select which List IDs you wish to fetch profiles for",
+          "type": "array",
+          "format" : "select",
+          "items": {
+            "enum": [],
+            "type": "string"
+          },
           "options": {
             "dependencies": {
               "fetch_profiles_mode": "fetch_by_list"
+            },
+            "async": {
+              "label": "Load List IDs",
+              "action": "loadListIds"
             }
           }
         },
         "fetch_profiles_by_segment": {
           "title": "Segment IDs",
           "propertyOrder": 30,
-          "description": "Comma separated list of segment IDs",
-          "type": "string",
+          "description": "Select which Segment IDs you wish to fetch profiles for",
+          "type": "array",
+          "format" : "select",
+          "items": {
+            "enum": [],
+            "type": "string"
+          },
           "options": {
             "dependencies": {
               "fetch_profiles_mode": "fetch_by_segment"
+            },
+             "async": {
+              "label": "Load Segment IDs",
+              "action": "loadSegmentIds"
             }
           }
         }

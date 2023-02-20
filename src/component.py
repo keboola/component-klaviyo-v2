@@ -3,13 +3,12 @@ import copy
 import dateparser
 import warnings
 
-from typing import List, Callable
+from typing import List, Callable, Dict
 
 from keboola.csvwriter import ElasticDictWriter
-from keboola.component.base import ComponentBase
+from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 from keboola.component.dao import TableDefinition
-from keboola.utils.helpers import comma_separated_values_to_list
 
 from client import KlaviyoClient, KlaviyoClientException
 from json_parser import FlattenJsonParser
@@ -83,9 +82,7 @@ class Component(ComponentBase):
 
         params = self.configuration.parameters
 
-        api_token = params.get(KEY_API_TOKEN)
-        self.client = KlaviyoClient(api_token=api_token)
-
+        self._init_client()
         self._validate_user_parameters()
 
         objects = params.get(KEY_OBJECTS)
@@ -97,6 +94,11 @@ class Component(ComponentBase):
 
         self._close_all_result_writers()
         self.write_state_file(self.new_state)
+
+    def _init_client(self):
+        params = self.configuration.parameters
+        api_token = params.get(KEY_API_TOKEN)
+        self.client = KlaviyoClient(api_token=api_token)
 
     def fetch_and_write_object_data(self, object_name: str, data_generator: Callable,
                                     **data_generator_kwargs) -> None:
@@ -178,14 +180,17 @@ class Component(ComponentBase):
         params = self.configuration.parameters
         profile_settings = params.get(KEY_PROFILES_SETTINGS)
         fetch_profiles_mode = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE)
+
         if fetch_profiles_mode == "fetch_all":
             self.fetch_and_write_object_data("profile", self.client.get_profiles)
+
         elif fetch_profiles_mode == "fetch_by_segment":
-            segments = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, ""))
+            segments = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, [])
             for segment_id in segments:
                 self.fetch_and_write_object_data("profile", self.client.get_segment_profiles, segment_id=segment_id)
+
         elif fetch_profiles_mode == "fetch_by_list":
-            lists = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, ""))
+            lists = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, [])
             for list_id in lists:
                 self.fetch_and_write_object_data("profile", self.client.get_list_profiles, list_id=list_id)
 
@@ -227,7 +232,7 @@ class Component(ComponentBase):
             table_definition.columns = copy.deepcopy(writer.fieldnames)
             self.write_manifest(table_definition)
 
-    def _validate_user_parameters(self):
+    def _validate_user_parameters(self) -> None:
         # Validate Date From and Date for events, if events are to be downloaded
         params = self.configuration.parameters
         objects = params.get(KEY_OBJECTS)
@@ -243,7 +248,7 @@ class Component(ComponentBase):
         profile_mode = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE)
         if profile_mode == "fetch_by_segment" and objects.get("profiles"):
             logging.info("Validating Profile fetching parameters...")
-            segments = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, ""))
+            segments = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, [])
             for segment_id in segments:
                 self.client.get_segment(segment_id)
             logging.info("Profile fetching parameters are valid")
@@ -251,10 +256,32 @@ class Component(ComponentBase):
         # Validate if list ids for profile fetching are valid
         if profile_mode == "fetch_by_list" and objects.get("profiles"):
             logging.info("Validating Profile fetching parameters...")
-            lists = comma_separated_values_to_list(profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, ""))
+            lists = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, [])
             for list_id in lists:
                 self.client.get_list(list_id)
             logging.info("Profile fetching parameters are valid")
+
+        # sync action that is executed when configuration.json "action":"testConnection" parameter is present.
+
+    @sync_action('testConnection')
+    def test_connection(self) -> None:
+        self._init_client()
+        if missing_scopes := self.client.get_missing_scopes():
+            raise UserException(
+                "Testing the connection failed, the API Token does not work for the following scopes: "
+                f" {missing_scopes}. ")
+
+    @sync_action('loadListIds')
+    def load_list_ids(self) -> List[Dict]:
+        self._init_client()
+        list_ids = self.client.get_list_ids()
+        return [{"label": list_id, "value": list_id} for list_id in list_ids]
+
+    @sync_action('loadSegmentIds')
+    def load_segment_ids(self) -> List[Dict]:
+        self._init_client()
+        segment_ids = self.client.get_segment_ids()
+        return [{"label": segment_id, "value": segment_id} for segment_id in segment_ids]
 
 
 if __name__ == "__main__":
