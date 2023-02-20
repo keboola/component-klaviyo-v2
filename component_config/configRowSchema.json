@@ -212,6 +212,7 @@
         "fetch_profiles_by_list": {
           "title": "List IDs",
           "propertyOrder": 20,
+          "uniqueItems": true,
           "description": "Select which List IDs you wish to fetch profiles for",
           "type": "array",
           "format" : "select",
@@ -235,6 +236,7 @@
           "description": "Select which Segment IDs you wish to fetch profiles for",
           "type": "array",
           "format" : "select",
+          "uniqueItems": true,
           "items": {
             "enum": [],
             "type": "string"
