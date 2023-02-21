@@ -104,12 +104,18 @@ class Component(ComponentBase):
                                     **data_generator_kwargs) -> None:
         self._initialize_result_writer(object_name)
         parser = FlattenJsonParser()
+
+        extra_data = {}
+        for arg_name in data_generator_kwargs:
+            if "_id" in arg_name:
+                extra_data = {arg_name: data_generator_kwargs[arg_name]}
+
         for i, page in enumerate(data_generator(**data_generator_kwargs)):
             if i > 0 and i % 100 == 0:
                 logging.info(f"Already fetched {i} pages of data of object {object_name}")
             for item in page:
                 parsed_attributes = parser.parse_row(item["attributes"])
-                self._get_result_writer(object_name).writerow({"id": item["id"], **parsed_attributes})
+                self._get_result_writer(object_name).writerow({"id": item["id"], **parsed_attributes, **extra_data})
 
     def _add_columns_from_state_to_table_definition(self, object_name: str,
                                                     table_definition: TableDefinition) -> TableDefinition:
@@ -187,12 +193,13 @@ class Component(ComponentBase):
         elif fetch_profiles_mode == "fetch_by_segment":
             segments = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, [])
             for segment_id in segments:
-                self.fetch_and_write_object_data("profile", self.client.get_segment_profiles, segment_id=segment_id)
+                self.fetch_and_write_object_data("segment_profile", self.client.get_segment_profiles,
+                                                 segment_id=segment_id)
 
         elif fetch_profiles_mode == "fetch_by_list":
             lists = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, [])
             for list_id in lists:
-                self.fetch_and_write_object_data("profile", self.client.get_list_profiles, list_id=list_id)
+                self.fetch_and_write_object_data("list_profile", self.client.get_list_profiles, list_id=list_id)
 
     def get_flows(self) -> None:
         logging.info("The Flow endpoint does not function with the API. It will be implemented in the future")
@@ -242,6 +249,13 @@ class Component(ComponentBase):
             self._parse_date(event_settings.get(KEY_DATE_FROM))
             self._parse_date(event_settings.get(KEY_DATE_TO))
             logging.info("Event parameters are valid")
+
+        # Validate_scopes
+        missing_scopes = self.client.get_missing_scopes()
+        for klaviyo_object in objects:
+            if klaviyo_object in missing_scopes:
+                raise UserException(f"Cannot fetch {klaviyo_object} as the api token is "
+                                    f"missing scopes {missing_scopes}")
 
         # Validate if segment ids for profile fetching are valid
         profile_settings = params.get(KEY_PROFILES_SETTINGS, {})

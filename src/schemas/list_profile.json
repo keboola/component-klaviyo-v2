@@ -1,0 +1,125 @@
+{
+  "name": "list_profile",
+  "description": "",
+  "primary_keys": [
+    "id",
+    "list_id"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "list_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "external_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "anonymous_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "title",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "first_name",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "last_name",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "email",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "phone_number",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "organization",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "image",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_address1",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_address2",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_city",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_region",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_timezone",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_latitude",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_longitude",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_zip",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "location_country",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "last_event_date",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}
