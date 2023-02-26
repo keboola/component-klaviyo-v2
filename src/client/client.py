@@ -47,16 +47,16 @@ class KlaviyoClient:
             error_message = self._process_error(api_exc)
             raise KlaviyoClientException(error_message) from api_exc
 
-    def get_list_ids(self) -> List[str]:
+    def get_list_ids(self) -> List[Dict]:
         all_list_ids = []
         for page in self._paginate_cursor_endpoint(self.client.Lists.get_lists):
-            all_list_ids.extend(row.get("id") for row in page)
+            all_list_ids.extend({"id": row.get("id"), "name": row.get("attributes").get("name")} for row in page)
         return all_list_ids
 
-    def get_segment_ids(self):
+    def get_segment_ids(self) -> List[Dict]:
         all_segment_ids = []
         for page in self._paginate_cursor_endpoint(self.client.Segments.get_segments):
-            all_segment_ids.extend(row.get("id") for row in page)
+            all_segment_ids.extend({"id": row.get("id"), "name": row.get("attributes").get("name")} for row in page)
         return all_segment_ids
 
     def get_list_profiles(self, list_id: str) -> Iterator[List[Dict]]:
