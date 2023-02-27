@@ -95,25 +95,6 @@
         }
       }
     },
-    "campaigns_settings": {
-      "title": "Campaigns - Additional Options",
-      "type": "object",
-      "propertyOrder": 20,
-      "options": {
-        "dependencies": {
-          "campaigns_hidden": "true"
-        }
-      },
-      "properties": {
-        "fetch_campaign_recipients": {
-          "title": "Fetch Campaign Recipients",
-          "propertyOrder": 20,
-          "format": "checkbox",
-          "type": "boolean",
-          "default": true
-        }
-      }
-    },
     "catalogs_settings": {
       "title": "Catalogs - Additional Options",
       "type": "object",

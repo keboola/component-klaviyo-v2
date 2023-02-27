@@ -20,15 +20,10 @@ KEY_OBJECTS = "objects"
 KEY_DATE_FROM = "date_from"
 KEY_DATE_TO = "date_to"
 
-KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
-KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_RECIPIENTS = "fetch_campaign_recipients"
-
 KEY_CATALOGS_SETTINGS = "catalogs_settings"
 KEY_CATALOGS_SETTINGS_FETCH_CATALOG_CATEGORIES = "fetch_catalog_categories"
 
 KEY_EVENTS_SETTINGS = "events_settings"
-
-KEY_FLOWS_SETTINGS = "flows_settings"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
 KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
@@ -141,35 +136,28 @@ class Component(ComponentBase):
         if catalog_settings.get(KEY_CATALOGS_SETTINGS_FETCH_CATALOG_CATEGORIES):
             self.fetch_and_write_object_data("catalog_categories", self.client.get_catalog_categories)
 
-    def get_campaigns(self, fetch_recipients: bool = True) -> None:
+    def get_campaigns(self) -> None:
         self._initialize_result_writer("campaign")
-        self._initialize_result_writer("campaign_list")
-        self._initialize_result_writer("campaign_excluded_list")
-
-        if fetch_recipients:
-            self._initialize_result_writer("campaign_recipient")
+        self._initialize_result_writer("campaign_audience")
+        self._initialize_result_writer("campaign_excluded_audience")
+        parser = FlattenJsonParser()
 
         for page in self.client.get_campaigns():
-            campaign_ids = [item["id"] for item in page]
-            if fetch_recipients:
-                self.get_campaign_recipients(campaign_ids, self._get_result_writer("campaign_recipient"))
             for item in page:
-                campaign_lists = item.pop("lists")
-                for campaign_list in campaign_lists:
-                    self._get_result_writer("campaign_list").writerow({"campaign_id": item["id"], **campaign_list})
 
-                excluded_lists = item.pop("excluded_lists")
-                for excluded_list in excluded_lists:
-                    self._get_result_writer("campaign_excluded_list").writerow(
-                        {"campaign_id": item["id"], **excluded_list})
+                audiences = item.get("attributes").pop("audiences")
+                included_audiences = audiences.get("included")
+                excluded_audiences = audiences.get("excluded")
 
-                self._get_result_writer("campaign").writerow(item)
+                for included_audience in included_audiences:
+                    self._get_result_writer("campaign_audience").writerow(
+                        {"campaign_id": item["id"], "list_id": included_audience})
+                for excluded_audiences in excluded_audiences:
+                    self._get_result_writer("campaign_excluded_audience").writerow(
+                        {"campaign_id": item["id"], "list_id": excluded_audiences})
 
-    def get_campaign_recipients(self, campaign_ids: List[str], recipients_writer: ElasticDictWriter) -> None:
-        for campaign_id in campaign_ids:
-            for page in self.client.get_campaign_recipients(campaign_id):
-                for item in page:
-                    recipients_writer.writerow({"campaign_id": campaign_id, **item})
+                parsed_attributes = parser.parse_row(item["attributes"])
+                self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
 
     def get_events(self) -> None:
         params = self.configuration.parameters

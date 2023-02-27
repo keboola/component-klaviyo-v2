@@ -11,17 +11,17 @@
       "base_type": "STRING"
     },
     {
-      "name": "template_id",
+      "name": "name",
       "description": "",
       "base_type": "STRING"
     },
     {
-      "name": "campaign_type",
+      "name": "channel",
       "description": "",
       "base_type": "STRING"
     },
     {
-      "name": "subject",
+      "name": "message",
       "description": "",
       "base_type": "STRING"
     },
@@ -31,67 +31,92 @@
       "base_type": "STRING"
     },
     {
-      "name": "status_label",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "status_id",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "name",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "from_name",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "from_email",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "message_type",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "is_segmented",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "num_recipients",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "created",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "updated",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "sent_at",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
       "name": "send_time",
       "description": "",
       "base_type": "STRING"
     },
     {
-      "name": "object",
+      "name": "scheduled_at",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created_at",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated_at",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "archived",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_strategy_options_static_is_local",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_strategy_method",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_strategy_options_throttled",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_strategy_options_static_datetime",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_strategy_options_static_send_past_recipients_immediately",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_strategy_options_sto",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_strategy_options_static",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_options_use_smart_sending",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "send_options_ignore_unsubscribes",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "tracking_options_is_tracking_opens",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "tracking_options_is_add_utm",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "tracking_options_utm_params",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "tracking_options_is_tracking_clicks",
       "description": "",
       "base_type": "STRING"
     }
