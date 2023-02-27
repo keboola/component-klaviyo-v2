@@ -1,0 +1,44 @@
+{
+  "name": "flow",
+  "description": "",
+  "primary_keys": [
+    "id"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "name",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "status",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "trigger_type",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "archived",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

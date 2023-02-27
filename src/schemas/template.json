@@ -1,0 +1,49 @@
+{
+  "name": "template",
+  "description": "",
+  "primary_keys": [
+    "id"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "company_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "html",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "editor_type",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "text",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "editor_type",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

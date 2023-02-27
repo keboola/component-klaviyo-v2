@@ -38,9 +38,7 @@ KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
 REQUIRED_PARAMETERS = [KEY_API_TOKEN, KEY_OBJECTS]
 REQUIRED_IMAGE_PARS = []
 
-# "flows" object endpoint is disfunctional for the time being
-# "templates" object endpoint is disfunctional for the time being
-OBJECT_ENDPOINTS = ["campaigns", "catalogs", "events", "metrics",
+OBJECT_ENDPOINTS = ["campaigns", "flows", "templates", "catalogs", "events", "metrics",
                     "lists", "segments", "profiles"]
 
 # Ignore dateparser warnings regarding pytz
@@ -62,9 +60,9 @@ class Component(ComponentBase):
             "metrics": self.get_metrics,
             "lists": self.get_lists,
             "segments": self.get_segments,
-            "profiles": self.get_profiles
-            # "flows": self.get_flows,
-            # "templates": self.get_templates
+            "profiles": self.get_profiles,
+            "flows": self.get_flows,
+            "templates": self.get_templates
         }
         self.client = None
         self.result_writers = {}
@@ -202,10 +200,10 @@ class Component(ComponentBase):
                 self.fetch_and_write_object_data("list_profile", self.client.get_list_profiles, list_id=list_id)
 
     def get_flows(self) -> None:
-        logging.info("The Flow endpoint does not function with the API. It will be implemented in the future")
+        self.fetch_and_write_object_data("flow", self.client.get_flows)
 
     def get_templates(self) -> None:
-        logging.info("The Templates endpoint does not function with the API. It will be implemented in the future")
+        self.fetch_and_write_object_data("template", self.client.get_templates)
 
     def _parse_date(self, date_to_parse: str) -> int:
         if date_to_parse.lower() in {"last", "lastrun", "last run"}:

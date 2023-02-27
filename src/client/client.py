@@ -78,13 +78,11 @@ class KlaviyoClient:
     def get_segment_profiles(self, segment_id: str) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Segments.get_segment_profiles, segment_id=segment_id)
 
-    # def get_flows(self) -> Generator:
-    #     # todo pagination not working
-    #     return self._paginate_number_endpoint(self.client.Flows.get_flows)
+    def get_flows(self) -> Iterator[List[Dict]]:
+        return self._paginate_cursor_endpoint(self.client.Flows.get_flows)
 
     def get_templates(self) -> Iterator[List[Dict]]:
-        # todo pagination not working for new client https://github.com/klaviyo/klaviyo-api-python/issues/6
-        return self._paginate_page_count_endpoint(self.old_client.Templates.get_templates)
+        return self._paginate_cursor_endpoint(self.client.Templates.get_templates)
 
     def get_campaigns(self) -> Iterator[List[Dict]]:
         return self._paginate_page_count_endpoint(self.old_client.Campaigns.get_campaigns)
