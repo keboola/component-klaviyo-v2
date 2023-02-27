@@ -72,8 +72,8 @@ Configuration
 "fetch_all" extracts all profiles.
 "fetch_by_list" extracts all profiles contained in specific lists, specified in the list of List IDs.
 "fetch_by_segment" extracts all profiles contained in specific segments, specified in the list of Segment IDs.        
-  - List IDs (fetch_by_list) - [OPT] array of list IDs
-  - Segment IDs (fetch_by_segment) - [OPT] array of segment IDs
+  - List IDs (fetch_profiles_by_list) - [OPT] array of list IDs
+  - Segment IDs (fetch_profiles_by_segment) - [OPT] array of segment IDs
 
 Sample Configuration
 =============
@@ -105,7 +105,7 @@ Sample Configuration
     },
     "profiles_settings": {
       "fetch_profiles_mode": "fetch_by_segment",
-      "fetch_by_segment": ["segid"]
+      "fetch_profiles_by_segment": ["segid"]
     }
   },
   "action": "run"
