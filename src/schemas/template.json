@@ -34,7 +34,7 @@
       "name": "text",
       "description": "",
       "base_type": "STRING"
-    }
+    },
     {
       "name": "created",
       "description": "",

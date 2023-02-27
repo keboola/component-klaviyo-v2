@@ -32,6 +32,10 @@ Supported endpoints
 - [Profiles](https://developers.klaviyo.com/en/reference/get_profiles)
 - [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
 - [Events](https://developers.klaviyo.com/en/reference/get_events)
+- [Flows](https://developers.klaviyo.com/en/reference/get_flows)
+- [Templates](https://developers.klaviyo.com/en/reference/get_templates)
+
+
 
 If you need more endpoints, please submit your request to
 [ideas.keboola.com](https://ideas.keboola.com/)
