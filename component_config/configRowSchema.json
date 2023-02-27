@@ -70,7 +70,7 @@
           "title": "Profiles",
           "format": "checkbox",
           "type": "boolean",
-          "default": true,
+          "default": false,
           "options": {
             "grid_columns": 3
           }
@@ -81,8 +81,7 @@
           "type": "boolean",
           "default": true,
           "options": {
-            "grid_columns": 3,
-            "hidden": true
+            "grid_columns": 3
           }
         },
         "templates": {
@@ -91,8 +90,7 @@
           "type": "boolean",
           "default": true,
           "options": {
-            "grid_columns": 3,
-            "hidden": true
+            "grid_columns": 3
           }
         }
       }
@@ -158,26 +156,6 @@
           "type": "string",
           "description": "Date to which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
           "default": "now"
-        }
-      }
-    },
-    "flows_settings": {
-      "title": "Flows - Additional Options",
-      "type": "object",
-      "propertyOrder": 50,
-      "options": {
-        "hidden": true,
-        "dependencies": {
-          "flows_hidden": "true"
-        }
-      },
-      "properties": {
-        "fetch_flows": {
-          "title": "Fetch Flow Actions",
-          "propertyOrder": 10,
-          "format": "checkbox",
-          "type": "boolean",
-          "default": true
         }
       }
     },
