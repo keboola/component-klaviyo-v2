@@ -137,7 +137,7 @@ class KlaviyoClient:
         try:
             self.client.Events.get_events()
         except OpenApiException:
-            missing_scopes += ["catalogs"]
+            missing_scopes += ["events"]
 
         # test lists endpoint
         try:
