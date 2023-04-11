@@ -1,14 +1,13 @@
-import logging
 import copy
-import dateparser
+import logging
 import warnings
-
 from typing import List, Callable, Dict
 
-from keboola.csvwriter import ElasticDictWriter
+import dateparser
 from keboola.component.base import ComponentBase, sync_action
-from keboola.component.exceptions import UserException
 from keboola.component.dao import TableDefinition
+from keboola.component.exceptions import UserException
+from keboola.csvwriter import ElasticDictWriter
 
 from client import KlaviyoClient, KlaviyoClientException
 from json_parser import FlattenJsonParser
@@ -237,7 +236,7 @@ class Component(ComponentBase):
             logging.info("Event parameters are valid")
 
         # Validate_scopes
-        missing_scopes = self.client.get_missing_scopes()
+        credentials_valid, missing_scopes = self.client.test_credentials()
         for klaviyo_object in objects:
             if klaviyo_object in missing_scopes:
                 raise UserException(f"Cannot fetch {klaviyo_object} as the api token is "
@@ -266,9 +265,13 @@ class Component(ComponentBase):
     @sync_action('testConnection')
     def test_connection(self) -> None:
         self._init_client()
-        if missing_scopes := self.client.get_missing_scopes():
+        credentials_valid, missing_scopes = self.client.test_credentials()
+
+        if not credentials_valid:
+            raise UserException("The provided API token is invalid. Unauthorized.")
+        if missing_scopes:
             raise UserException(
-                "Testing the connection failed, the API Token does not work for the following scopes: "
+                "The provided token is valid but some scopes are unauthorized. Please enable RO for following scopes: "
                 f" {missing_scopes}. ")
 
     @sync_action('loadListIds')

@@ -9,7 +9,7 @@
       "type": "string",
       "title": "API Token",
       "propertyOrder": 1,
-      "description" : "Private API Key with Read-Only access to all Klaviyo Objects",
+      "description" : "<a href=\"https://help.klaviyo.com/hc/en-us/articles/7423954176283#add-a-scope-to-a-private-api-key-2\">Private API Key with Read-Only access</a> to all Klaviyo Objects",
       "format": "password"
     },
     "test_connection": {
