@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Iterator, Callable, Dict, List, Tuple
 
 from klaviyo_api import KlaviyoAPI
@@ -119,7 +120,7 @@ class KlaviyoClient:
             error_name = f"{error_data.get('code')} ({error_data.get('status')})"
         return f"{error_name} : {error_detail}"
 
-    def test_credentials(self) -> Tuple[bool, List[str]]:
+    def test_credentials(self) -> Tuple[bool, List[str], Exception]:
         """
         Test credentials. Returns list of unauthorized scopes if present,
 
@@ -128,6 +129,7 @@ class KlaviyoClient:
         """
         missing_scopes = []
         valid_token = False
+        last_exception = None
         test_scopes = {"campaigns": self.client.Campaigns.get_campaigns,
                        "catalogs": self.client.Catalogs.get_catalog_items,
                        "events": self.client.Events.get_events,
@@ -143,9 +145,12 @@ class KlaviyoClient:
                 test_scopes[scope]()
                 valid_token = True
             except OpenApiException as e:
+                logging.debug(f"Test {scope} scope failed with {e}")
                 missing_scopes.append(scope)
                 # token is valid when unauthorized error received
                 if e.status == 403:
                     valid_token = True
+                else:
+                    last_exception = e
 
-        return valid_token, missing_scopes
+        return valid_token, missing_scopes, last_exception

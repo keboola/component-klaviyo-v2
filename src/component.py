@@ -236,11 +236,7 @@ class Component(ComponentBase):
             logging.info("Event parameters are valid")
 
         # Validate_scopes
-        credentials_valid, missing_scopes = self.client.test_credentials()
-        for klaviyo_object in objects:
-            if klaviyo_object in missing_scopes:
-                raise UserException(f"Cannot fetch {klaviyo_object} as the api token is "
-                                    f"missing scopes {missing_scopes}")
+        self.test_connection()
 
         # Validate if segment ids for profile fetching are valid
         profile_settings = params.get(KEY_PROFILES_SETTINGS, {})
@@ -265,10 +261,11 @@ class Component(ComponentBase):
     @sync_action('testConnection')
     def test_connection(self) -> None:
         self._init_client()
-        credentials_valid, missing_scopes = self.client.test_credentials()
+        credentials_valid, missing_scopes, last_exception = self.client.test_credentials()
 
         if not credentials_valid:
-            raise UserException("The provided API token is invalid. Unauthorized.")
+            raise UserException(
+                f"The provided API token is invalid. Unauthorized. {last_exception}") from last_exception
         if missing_scopes:
             raise UserException(
                 "The provided token is valid but some scopes are unauthorized. Please enable RO for following scopes: "
