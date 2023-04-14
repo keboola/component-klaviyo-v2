@@ -7,6 +7,7 @@ import dateparser
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.dao import TableDefinition
 from keboola.component.exceptions import UserException
+from keboola.component.sync_actions import ValidationResult, MessageType
 from keboola.csvwriter import ElasticDictWriter
 
 from client import KlaviyoClient, KlaviyoClientException
@@ -235,9 +236,6 @@ class Component(ComponentBase):
             self._parse_date(event_settings.get(KEY_DATE_TO))
             logging.info("Event parameters are valid")
 
-        # Validate_scopes
-        self.test_connection()
-
         # Validate if segment ids for profile fetching are valid
         profile_settings = params.get(KEY_PROFILES_SETTINGS, {})
         profile_mode = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE)
@@ -258,18 +256,29 @@ class Component(ComponentBase):
 
         # sync action that is executed when configuration.json "action":"testConnection" parameter is present.
 
-    @sync_action('testConnection')
-    def test_connection(self) -> None:
+    @sync_action('validate_connection')
+    def test_connection(self) -> ValidationResult:
         self._init_client()
         credentials_valid, missing_scopes, last_exception = self.client.test_credentials()
 
+        result = ValidationResult("Credentials are valid!", MessageType.SUCCESS)
+
         if not credentials_valid:
-            raise UserException(
-                f"The provided API token is invalid. Unauthorized. {last_exception}") from last_exception
+            result = ValidationResult(
+                "The provided API token is invalid. Unauthorized. /n/n"
+                f"Exception: ```{last_exception}```",
+                MessageType.DANGER)
+
         if missing_scopes:
-            raise UserException(
-                "The provided token is valid but some scopes are unauthorized. Please enable RO for following scopes: "
-                f" {missing_scopes}. ")
+            scope_rows = "\n".join([f'| {scope} | {detail} |' for scope, detail in missing_scopes.items()])
+            missing_scopes_str = f'| Scope | Error |\n|-------|-------|\n{scope_rows}'
+
+            result = ValidationResult(
+                "The provided token is valid but some scopes are unauthorized. "
+                "Please enable RO for following scopes or fix related issues: \n\n"
+                f"{missing_scopes_str}", MessageType.WARNING)
+
+        return result
 
     @sync_action('loadListIds')
     def load_list_ids(self) -> List[Dict]:

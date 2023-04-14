@@ -120,14 +120,14 @@ class KlaviyoClient:
             error_name = f"{error_data.get('code')} ({error_data.get('status')})"
         return f"{error_name} : {error_detail}"
 
-    def test_credentials(self) -> Tuple[bool, List[str], Exception]:
+    def test_credentials(self) -> Tuple[bool, Dict, Exception]:
         """
         Test credentials. Returns list of unauthorized scopes if present,
 
         Returns:
 
         """
-        missing_scopes = []
+        missing_scopes = dict()
         valid_token = False
         last_exception = None
         test_scopes = {"campaigns": self.client.Campaigns.get_campaigns,
@@ -145,8 +145,14 @@ class KlaviyoClient:
                 test_scopes[scope]()
                 valid_token = True
             except OpenApiException as e:
+                json_resp = json.loads(e.body)
+                detail = ''
+                reason = e.reason
+                if json_resp.get('errors'):
+                    detail = json_resp['errors'][0]["detail"]
+
                 logging.debug(f"Test {scope} scope failed with {e}")
-                missing_scopes.append(scope)
+                missing_scopes[scope] = f'{reason}: {detail}'
                 # token is valid when unauthorized error received
                 if e.status == 403:
                     valid_token = True
