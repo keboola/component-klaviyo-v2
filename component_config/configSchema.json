@@ -9,13 +9,19 @@
       "type": "string",
       "title": "API Token",
       "propertyOrder": 1,
-      "description" : "<a href=\"https://help.klaviyo.com/hc/en-us/articles/7423954176283#add-a-scope-to-a-private-api-key-2\">Private API Key with Read-Only access</a> to all Klaviyo Objects",
+      "description": "<a href=\"https://help.klaviyo.com/hc/en-us/articles/7423954176283#add-a-scope-to-a-private-api-key-2\">Private API Key with Read-Only access</a> to all Klaviyo Objects",
       "format": "password"
     },
     "test_connection": {
       "type": "button",
-      "format": "test-connection",
-      "propertyOrder": 30
+      "format": "sync-action",
+      "propertyOrder": 30,
+      "options": {
+        "async": {
+          "label": "TEST CONNECTION",
+          "action": "validate_connection"
+        }
+      }
     }
   }
 }
