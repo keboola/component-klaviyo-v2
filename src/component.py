@@ -269,7 +269,7 @@ class Component(ComponentBase):
                 f"Exception: ```{last_exception}```",
                 MessageType.DANGER)
 
-        if missing_scopes:
+        elif missing_scopes:
             scope_rows = "\n".join([f'| {scope} | {detail} |' for scope, detail in missing_scopes.items()])
             missing_scopes_str = f'| Scope | Error |\n|-------|-------|\n{scope_rows}'
 
