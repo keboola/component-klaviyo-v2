@@ -1,6 +1,8 @@
 import json
+import logging
+from typing import Iterator, Callable, Dict, List, Tuple
+
 from klaviyo_api import KlaviyoAPI
-from typing import Iterator, Callable, Dict, List
 from openapi_client.exceptions import OpenApiException
 
 MAX_DELAY = 60
@@ -118,49 +120,43 @@ class KlaviyoClient:
             error_name = f"{error_data.get('code')} ({error_data.get('status')})"
         return f"{error_name} : {error_detail}"
 
-    def get_missing_scopes(self) -> List[str]:
-        missing_scopes = []
+    def test_credentials(self) -> Tuple[bool, Dict, Exception]:
+        """
+        Test credentials. Returns list of unauthorized scopes if present,
 
-        # test campaigns endpoint
-        try:
-            self.client.Campaigns.get_campaigns()
-        except OpenApiException:
-            missing_scopes += ["campaigns"]
+        Returns:
 
-        # test catalogs endpoint
-        try:
-            self.client.Catalogs.get_catalog_items()
-        except OpenApiException:
-            missing_scopes += ["catalogs"]
+        """
+        missing_scopes = dict()
+        valid_token = False
+        last_exception = None
+        test_scopes = {"campaigns": self.client.Campaigns.get_campaigns,
+                       "catalogs": self.client.Catalogs.get_catalog_items,
+                       "events": self.client.Events.get_events,
+                       "lists": self.client.Lists.get_lists,
+                       "metrics": self.client.Metrics.get_metrics,
+                       "profiles": self.client.Profiles.get_profiles,
+                       "segments": self.client.Segments.get_segments
+                       }
 
-        # test events endpoint
-        try:
-            self.client.Events.get_events()
-        except OpenApiException:
-            missing_scopes += ["catalogs"]
+        # test scopes
+        for scope in test_scopes:
+            try:
+                test_scopes[scope]()
+                valid_token = True
+            except OpenApiException as e:
+                json_resp = json.loads(e.body)
+                detail = ''
+                reason = e.reason
+                if json_resp.get('errors'):
+                    detail = json_resp['errors'][0]["detail"]
 
-        # test lists endpoint
-        try:
-            self.client.Lists.get_lists()
-        except OpenApiException:
-            missing_scopes += ["lists"]
+                logging.debug(f"Test {scope} scope failed with {e}")
+                missing_scopes[scope] = f'{reason}: {detail}'
+                # token is valid when unauthorized error received
+                if e.status == 403:
+                    valid_token = True
+                else:
+                    last_exception = e
 
-        # test metrics endpoint
-        try:
-            self.client.Metrics.get_metrics()
-        except OpenApiException:
-            missing_scopes += ["metrics"]
-
-        # test profiles endpoint
-        try:
-            self.client.Profiles.get_profiles()
-        except OpenApiException:
-            missing_scopes += ["profiles"]
-
-        # test segments endpoint
-        try:
-            self.client.Segments.get_segments()
-        except OpenApiException:
-            missing_scopes += ["segment"]
-
-        return missing_scopes
+        return valid_token, missing_scopes, last_exception
