@@ -276,7 +276,10 @@ class Component(ComponentBase):
             result = ValidationResult(
                 "The provided token is valid but some scopes are unauthorized. "
                 "Please enable RO for following scopes or fix related issues: \n\n"
-                f"{missing_scopes_str}", MessageType.WARNING)
+                f"{missing_scopes_str}"
+                "\n\nFor more information refer to [the documentation](https://help.klaviyo.com/"
+                "hc/en-us/articles/7423954176283#add-a-scope-to-a-private-api-key-2)",
+                MessageType.WARNING)
 
         return result
 
