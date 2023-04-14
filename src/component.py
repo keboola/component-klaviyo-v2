@@ -265,8 +265,7 @@ class Component(ComponentBase):
 
         if not credentials_valid:
             result = ValidationResult(
-                "The provided API token is invalid. Unauthorized. /n/n"
-                f"Exception: ```{last_exception}```",
+                "The provided API token is invalid. Unauthorized.",
                 MessageType.DANGER)
 
         elif missing_scopes:
