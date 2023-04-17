@@ -222,8 +222,44 @@ class Component(ComponentBase):
             table_definition = self.result_writers.get(object_name).get("table_definition")
             writer.close()
             self.new_state[object_name] = copy.deepcopy(writer.fieldnames)
-            table_definition.columns = copy.deepcopy(writer.fieldnames)
+
+            writer_columns = copy.deepcopy(writer.fieldnames)
+            table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
+
             self.write_manifest(table_definition)
+
+    def _deduplicate_column_names_and_metadata(self, table_definition: TableDefinition,
+                                               columns: List[str]) -> TableDefinition:
+        """
+            Method to update duplicate columns and their metadata.
+            Klaviyo allows duplicate column names when the case is different
+            e.g. columns property_name and property_Name are 2 valid distinct data columns. In Keboola, this leads to
+            a duplicate column error, and we must rename the columns to property_name and property_Name_2 in this
+            case.
+        """
+        final_columns = []
+        column_count = {}
+        for column in columns:
+            col_name_lower = column.lower()
+            column_name = column
+            if col_name_lower not in column_count:
+                column_count[col_name_lower] = 1
+            else:
+                column_count[col_name_lower] += 1
+                column_name = f"{column_name}_{column_count[col_name_lower]}"
+                # If column metadata is present we must update the metadata information as well.
+                table_definition.table_metadata.column_metadata = self.swap_key(
+                    table_definition.table_metadata.column_metadata, column,
+                    column_name)
+            final_columns.append(column_name)
+        table_definition.columns = copy.deepcopy(final_columns)
+        return table_definition
+
+    @staticmethod
+    def swap_key(dictionary: Dict, old_key: str, new_key: str) -> Dict:
+        if old_key in dictionary:
+            dictionary[new_key] = dictionary.pop(old_key)
+        return dictionary
 
     def _validate_user_parameters(self) -> None:
         # Validate Date From and Date for events, if events are to be downloaded
