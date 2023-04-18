@@ -252,7 +252,7 @@ class Component(ComponentBase):
                     table_definition.table_metadata.column_metadata, column,
                     column_name)
             final_columns.append(column_name)
-        table_definition.columns = copy.deepcopy(final_columns)
+        table_definition.columns = final_columns
         return table_definition
 
     @staticmethod
