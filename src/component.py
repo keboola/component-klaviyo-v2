@@ -1,5 +1,6 @@
 import copy
 import logging
+import hashlib
 import warnings
 from typing import List, Callable, Dict
 
@@ -225,6 +226,7 @@ class Component(ComponentBase):
 
             writer_columns = copy.deepcopy(writer.fieldnames)
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
+            table_definition = self._shorten_column_names_in_table_definition(table_definition)
 
             self.write_manifest(table_definition)
 
@@ -254,6 +256,40 @@ class Component(ComponentBase):
             final_columns.append(column_name)
         table_definition.columns = final_columns
         return table_definition
+
+    def _shorten_column_names_in_table_definition(self, table_definition: TableDefinition) -> TableDefinition:
+        """
+        Function to make the columns conform to KBC, max length of column is 64.
+        """
+        columns = table_definition.columns
+
+        key_map = {}
+        description_map = {}
+
+        # Reduce length of column names
+        for i, column_name in enumerate(columns):
+            if len(column_name) >= 64:
+                hashed = self._hash_column(column_name)
+                key_map[column_name] = f"{column_name[:30]}_{hashed}"
+                description_map[f"{column_name[:30]}_{hashed}"] = column_name
+                columns[i] = f"{column_name[:30]}_{hashed}"
+        table_definition.columns = columns
+
+        # update metadata keys
+        column_metadata = table_definition.table_metadata.column_metadata
+        table_definition.table_metadata.column_metadata = {key_map.get(k, k): v for (k, v) in column_metadata.items()}
+
+        # add full names of columns to column descriptions
+        for c in table_definition.table_metadata.column_metadata:
+            if c in description_map:
+                table_definition.table_metadata.column_metadata[c][
+                    "KBC.description"] = f"Full column name :{description_map[c]}"
+
+        return table_definition
+
+    @staticmethod
+    def _hash_column(columns_name: str) -> str:
+        return hashlib.md5(columns_name.encode('utf-8')).hexdigest()
 
     @staticmethod
     def swap_key(dictionary: Dict, old_key: str, new_key: str) -> Dict:
