@@ -240,13 +240,15 @@ class Component(ComponentBase):
         final_columns = []
         column_count = {}
         for column in columns:
-            col_name_lower = column.lower()
+            # keboola_column_name is the resulting column name in Keboola, no spaces, and lowercase.
+            # Lowercase because Keboola takes column name Product and product as the same.
+            keboola_column_name = column.lower().replace(" ", "_")
             column_name = column
-            if col_name_lower not in column_count:
-                column_count[col_name_lower] = 1
+            if keboola_column_name not in column_count:
+                column_count[keboola_column_name] = 1
             else:
-                column_count[col_name_lower] += 1
-                column_name = f"{column_name}_{column_count[col_name_lower]}"
+                column_count[keboola_column_name] += 1
+                column_name = f"{column_name}_{column_count[keboola_column_name]}"
                 # If column metadata is present we must update the metadata information as well.
                 table_definition.table_metadata.column_metadata = self.swap_key(
                     table_definition.table_metadata.column_metadata, column,
