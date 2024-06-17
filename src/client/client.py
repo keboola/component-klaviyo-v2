@@ -70,7 +70,7 @@ class KlaviyoClient:
             raise KlaviyoClientException(error_message) from api_exc
 
     def get_segment_profiles(self, segment_id: str) -> Iterator[List[Dict]]:
-        return self._paginate_cursor_endpoint(self.client.Segments.get_segment_profiles, segment_id=segment_id)
+        return self._paginate_cursor_endpoint(self.client.Segments.get_segment_profiles, id=segment_id)
 
     def get_flows(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Flows.get_flows)
