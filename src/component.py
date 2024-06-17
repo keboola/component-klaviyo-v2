@@ -66,6 +66,8 @@ class Component(ComponentBase):
         super().__init__()
 
     def run(self):
+        print(self.load_segment_ids())
+        exit()
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
 
