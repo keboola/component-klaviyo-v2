@@ -24,6 +24,9 @@ KEY_DATE_TO = "date_to"
 KEY_CATALOGS_SETTINGS = "catalogs_settings"
 KEY_CATALOGS_SETTINGS_FETCH_CATALOG_CATEGORIES = "fetch_catalog_categories"
 
+KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
+KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS = "fetch_campaign_channels"
+
 KEY_EVENTS_SETTINGS = "events_settings"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
@@ -67,7 +70,7 @@ class Component(ComponentBase):
         super().__init__()
 
     def run(self):
-        print(self.load_segment_ids())
+        self.load_segment_ids()
         exit()
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
@@ -139,27 +142,31 @@ class Component(ComponentBase):
         if catalog_settings.get(KEY_CATALOGS_SETTINGS_FETCH_CATALOG_CATEGORIES):
             self.fetch_and_write_object_data("catalog_categories", self.client.get_catalog_categories)
 
-    def get_campaigns(self, channel: str = "email") -> None:
+    def get_campaigns(self) -> None:
+        campaigns_settings = self.configuration.parameters.get(KEY_CAMPAIGNS_SETTINGS, {})
+        channels = campaigns_settings.get(KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS, ["email", "sms"])
+
         self._initialize_result_writer("campaign")
         self._initialize_result_writer("campaign_audience")
         self._initialize_result_writer("campaign_excluded_audience")
         parser = FlattenJsonParser()
 
-        for item in self.client.get_campaigns(channel=channel):
+        for channel in channels:
+            for item in self.client.get_campaigns(channel=channel):
 
-            audiences = item.get("attributes").pop("audiences")
-            included_audiences = audiences.get("included")
-            excluded_audiences = audiences.get("excluded")
+                audiences = item.get("attributes").pop("audiences")
+                included_audiences = audiences.get("included")
+                excluded_audiences = audiences.get("excluded")
 
-            for included_audience in included_audiences:
-                self._get_result_writer("campaign_audience").writerow(
-                    {"campaign_id": item["id"], "list_id": included_audience})
-            for excluded_audiences in excluded_audiences:
-                self._get_result_writer("campaign_excluded_audience").writerow(
-                    {"campaign_id": item["id"], "list_id": excluded_audiences})
+                for included_audience in included_audiences:
+                    self._get_result_writer("campaign_audience").writerow(
+                        {"campaign_id": item["id"], "list_id": included_audience})
+                for excluded_audiences in excluded_audiences:
+                    self._get_result_writer("campaign_excluded_audience").writerow(
+                        {"campaign_id": item["id"], "list_id": excluded_audiences})
 
-            parsed_attributes = parser.parse_row(item["attributes"])
-            self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
+                parsed_attributes = parser.parse_row(item["attributes"])
+                self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
 
     def get_events(self) -> None:
         params = self.configuration.parameters
@@ -337,6 +344,7 @@ class Component(ComponentBase):
         self._init_client()
         try:
             segment_ids = self.client.get_segment_ids()
+            print(segment_ids)
             r = [{"label": json.dumps(segment_id.get("name")), "value": segment_id.get("id")} for segment_id in
                  segment_ids]
         except Exception as e:
