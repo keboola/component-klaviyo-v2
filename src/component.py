@@ -141,8 +141,7 @@ class Component(ComponentBase):
             self.fetch_and_write_object_data("catalog_categories", self.client.get_catalog_categories)
 
     def get_campaigns(self) -> None:
-        campaigns_settings = self.configuration.parameters.get(KEY_CAMPAIGNS_SETTINGS, {})
-        channels = campaigns_settings.get(KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS, ["email", "sms"])
+        channels = self.configuration.parameters.get(KEY_CAMPAIGNS_SETTINGS, ["email", "sms"])
 
         self._initialize_result_writer("campaign")
         self._initialize_result_writer("campaign_audience")
