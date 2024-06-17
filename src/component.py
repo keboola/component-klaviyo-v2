@@ -8,7 +8,7 @@ import dateparser
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.dao import TableDefinition
 from keboola.component.exceptions import UserException
-from keboola.component.sync_actions import ValidationResult, MessageType
+from keboola.component.sync_actions import ValidationResult, MessageType, SelectElement
 from keboola.csvwriter import ElasticDictWriter
 
 from client import KlaviyoClient, KlaviyoClientException
@@ -70,8 +70,6 @@ class Component(ComponentBase):
         super().__init__()
 
     def run(self):
-        self.load_segment_ids()
-        exit()
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
 
@@ -330,23 +328,22 @@ class Component(ComponentBase):
         return result
 
     @sync_action("loadListIds")
-    def load_list_ids(self) -> List[Dict]:
+    def load_list_ids(self) -> [SelectElement]:
         self._init_client()
         try:
             list_ids = self.client.get_list_ids()
-            r = [{"label": json.dumps(list_id.get("name")), "value": list_id.get("id")} for list_id in list_ids]
+            r = [SelectElement(value=list_id.get("id"), label=json.dumps(list_id.get("name"))) for list_id in list_ids]
         except Exception as e:
             raise UserException(e) from e
         return r
 
     @sync_action("loadSegmentIds")
-    def load_segment_ids(self) -> List[Dict]:
+    def load_segment_ids(self) -> [SelectElement]:
         self._init_client()
         try:
             segment_ids = self.client.get_segment_ids()
-            print(segment_ids)
-            r = [{"label": json.dumps(segment_id.get("name")), "value": segment_id.get("id")} for segment_id in
-                 segment_ids]
+            r = [SelectElement(value=segment_id.get("id"), label=json.dumps(segment_id.get("name")))
+                 for segment_id in segment_ids]
         except Exception as e:
             raise UserException(e) from e
         return r
