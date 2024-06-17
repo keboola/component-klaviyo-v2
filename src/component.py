@@ -322,13 +322,19 @@ class Component(ComponentBase):
     @sync_action('loadListIds')
     def load_list_ids(self) -> List[Dict]:
         self._init_client()
-        list_ids = self.client.get_list_ids()
+        try:
+            list_ids = self.client.get_list_ids()
+        except Exception as e:
+            raise UserException(e) from e
         return [{"label": list_id.get("name"), "value": list_id.get("id")} for list_id in list_ids]
 
     @sync_action('loadSegmentIds')
     def load_segment_ids(self) -> List[Dict]:
         self._init_client()
-        segment_ids = self.client.get_segment_ids()
+        try:
+            segment_ids = self.client.get_segment_ids()
+        except Exception as e:
+            raise UserException(e) from e
         return [{"label": segment_id.get("name"), "value": segment_id.get("id")} for segment_id in segment_ids]
 
 
