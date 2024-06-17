@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 import warnings
 from typing import List, Callable, Dict
@@ -321,22 +322,23 @@ class Component(ComponentBase):
 
         return result
 
-    @sync_action('loadListIds')
+    @sync_action("loadListIds")
     def load_list_ids(self) -> List[Dict]:
         self._init_client()
         try:
             list_ids = self.client.get_list_ids()
-            r = [{"label": list_id.get("name"), "value": list_id.get("id")} for list_id in list_ids]
+            r = [{"label": json.dumps(list_id.get("name")), "value": list_id.get("id")} for list_id in list_ids]
         except Exception as e:
             raise UserException(e) from e
         return r
 
-    @sync_action('loadSegmentIds')
+    @sync_action("loadSegmentIds")
     def load_segment_ids(self) -> List[Dict]:
         self._init_client()
         try:
             segment_ids = self.client.get_segment_ids()
-            r = [{"label": segment_id.get("name"), "value": segment_id.get("id")} for segment_id in segment_ids]
+            r = [{"label": json.dumps(segment_id.get("name")), "value": segment_id.get("id")} for segment_id in
+                 segment_ids]
         except Exception as e:
             raise UserException(e) from e
         return r
