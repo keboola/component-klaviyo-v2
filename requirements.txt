@@ -4,5 +4,4 @@ keboola.utils
 keboola.http-client
 mock
 freezegun
-klaviyo-api==1.2.1
-klaviyo_sdk
+klaviyo-api==8.0.1

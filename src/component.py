@@ -136,28 +136,27 @@ class Component(ComponentBase):
         if catalog_settings.get(KEY_CATALOGS_SETTINGS_FETCH_CATALOG_CATEGORIES):
             self.fetch_and_write_object_data("catalog_categories", self.client.get_catalog_categories)
 
-    def get_campaigns(self) -> None:
+    def get_campaigns(self, channel: str = "email") -> None:
         self._initialize_result_writer("campaign")
         self._initialize_result_writer("campaign_audience")
         self._initialize_result_writer("campaign_excluded_audience")
         parser = FlattenJsonParser()
 
-        for page in self.client.get_campaigns():
-            for item in page:
+        for item in self.client.get_campaigns(channel=channel):
 
-                audiences = item.get("attributes").pop("audiences")
-                included_audiences = audiences.get("included")
-                excluded_audiences = audiences.get("excluded")
+            audiences = item.get("attributes").pop("audiences")
+            included_audiences = audiences.get("included")
+            excluded_audiences = audiences.get("excluded")
 
-                for included_audience in included_audiences:
-                    self._get_result_writer("campaign_audience").writerow(
-                        {"campaign_id": item["id"], "list_id": included_audience})
-                for excluded_audiences in excluded_audiences:
-                    self._get_result_writer("campaign_excluded_audience").writerow(
-                        {"campaign_id": item["id"], "list_id": excluded_audiences})
+            for included_audience in included_audiences:
+                self._get_result_writer("campaign_audience").writerow(
+                    {"campaign_id": item["id"], "list_id": included_audience})
+            for excluded_audiences in excluded_audiences:
+                self._get_result_writer("campaign_excluded_audience").writerow(
+                    {"campaign_id": item["id"], "list_id": excluded_audiences})
 
-                parsed_attributes = parser.parse_row(item["attributes"])
-                self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
+            parsed_attributes = parser.parse_row(item["attributes"])
+            self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
 
     def get_events(self) -> None:
         params = self.configuration.parameters
