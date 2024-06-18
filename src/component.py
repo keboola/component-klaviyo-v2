@@ -10,6 +10,8 @@ from keboola.component.dao import TableDefinition
 from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import ValidationResult, MessageType, SelectElement
 from keboola.csvwriter import ElasticDictWriter
+from keboola.utils import header_normalizer
+
 
 from client import KlaviyoClient, KlaviyoClientException
 from json_parser import FlattenJsonParser
@@ -232,7 +234,17 @@ class Component(ComponentBase):
             writer_columns = copy.deepcopy(writer.fieldnames)
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
 
+            deduped_columns = table_definition.columns.copy()
+            normalized_headers = self._normalize_headers(deduped_columns)
+            table_definition.columns = normalized_headers
+
             self.write_manifest(table_definition)
+
+    @staticmethod
+    def _normalize_headers(columns: List[str]) -> List[str]:
+        head_norm = header_normalizer.get_normalizer(strategy=header_normalizer.NormalizerStrategy.ENCODER,
+                                                     char_encoder="unicode")
+        return head_norm.normalize_header(columns)
 
     def _deduplicate_column_names_and_metadata(self, table_definition: TableDefinition,
                                                columns: List[str]) -> TableDefinition:
