@@ -144,7 +144,11 @@ class KlaviyoClient:
         # test scopes
         for scope in test_scopes:
             try:
-                test_scopes[scope]()
+                if scope == "campaigns":
+                    test_scopes[scope](filter=f"equals(messages.channel,'email')")
+                else:
+                    test_scopes[scope]()
+
                 valid_token = True
             except OpenApiException as e:
                 json_resp = json.loads(e.body)
