@@ -145,7 +145,7 @@ class KlaviyoClient:
         for scope in test_scopes:
             try:
                 if scope == "campaigns":
-                    test_scopes[scope](filter=f"equals(messages.channel,'email')")
+                    test_scopes[scope](filter="equals(messages.channel,'email')")
                 else:
                     test_scopes[scope]()
 
