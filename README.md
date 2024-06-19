@@ -60,7 +60,7 @@ Configuration
   - Flows (flows)
   - Templates (templates)
 - Campaigns : Additional Options (campaigns_settings) - [OPT] Additional options if campaigns are being downloaded
-  - Fetch Campaign Recipients (fetch_campaign_recipients) - [OPT] Boolean value to indicate if campaign recipients should be extracted for each campaign
+  - Channel Options (fetch_campaign_channels) - [OPT] Campaign channels (sms, email). Defaults to all channels.
 - Catalogs : Additional Options (catalogs_settings) - [OPT] Additional options if catalogs are being downloaded
   - Fetch Catalog Categories (fetch_catalog_categories) - [OPT] Boolean value to indicate if catalog categories should be fetched
 - Events : Additional Options (events_settings) - [OPT] Additional options if events are being downloaded
@@ -78,6 +78,8 @@ Configuration
 "fetch_by_segment" extracts all profiles contained in specific segments, specified in the list of Segment IDs.        
   - List IDs (fetch_profiles_by_list) - [OPT] array of list IDs
   - Segment IDs (fetch_profiles_by_segment) - [OPT] array of segment IDs
+
+**Note:** Events endpoint contains deeply nested data, which can lead to long column names. This has to be addressed using Rename Columns processor.
 
 Sample Configuration
 =============
