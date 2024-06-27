@@ -78,8 +78,8 @@ class KlaviyoClient:
     def get_templates(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Templates.get_templates)
 
-    def get_campaigns(self, channel: str) -> Iterator[List[Dict]]:
-        campaigns = self.client.Campaigns.get_campaigns(filter=f"equals(messages.channel,'{channel}')")
+    def get_campaigns(self, channel: str, include: str) -> Iterator[List[Dict]]:
+        campaigns = self.client.Campaigns.get_campaigns(filter=f"equals(messages.channel,'{channel}')", include=include)
         for r in campaigns.get("data"):
             yield r
 

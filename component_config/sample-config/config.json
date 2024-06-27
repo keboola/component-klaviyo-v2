@@ -19,6 +19,7 @@
     }
   },
   "parameters": {
+    "include": {"campaigns": "all"},
     "#api_token": "demo",
     "period_from": "yesterday",
     "endpoints": [

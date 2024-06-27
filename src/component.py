@@ -36,6 +36,8 @@ KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
 KEY_PROFILES_SETTINGS_FETCH_BY_LIST = "fetch_profiles_by_list"
 KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
 
+KEY_INCLUDE = "include"
+
 REQUIRED_PARAMETERS = [KEY_API_TOKEN, KEY_OBJECTS]
 REQUIRED_IMAGE_PARS = []
 
@@ -144,6 +146,7 @@ class Component(ComponentBase):
 
     def get_campaigns(self) -> None:
         channels = self.configuration.parameters.get(KEY_CAMPAIGNS_SETTINGS, ["email", "sms"])
+        include = self.configuration.parameters.get(KEY_INCLUDE).get("campaigns")
 
         self._initialize_result_writer("campaign")
         self._initialize_result_writer("campaign_audience")
@@ -151,7 +154,7 @@ class Component(ComponentBase):
         parser = FlattenJsonParser()
 
         for channel in channels:
-            for item in self.client.get_campaigns(channel=channel):
+            for item in self.client.get_campaigns(channel=channel, include=include):
 
                 audiences = item.get("attributes").pop("audiences")
                 included_audiences = audiences.get("included")
