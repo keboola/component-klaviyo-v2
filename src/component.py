@@ -12,7 +12,6 @@ from keboola.component.sync_actions import ValidationResult, MessageType, Select
 from keboola.csvwriter import ElasticDictWriter
 from keboola.utils import header_normalizer
 
-
 from client import KlaviyoClient, KlaviyoClientException
 from json_parser import FlattenJsonParser
 
@@ -133,7 +132,15 @@ class Component(ComponentBase):
         self.fetch_and_write_object_data("list", self.client.get_lists)
 
     def get_segments(self) -> None:
-        self.fetch_and_write_object_data("segment", self.client.get_segments)
+        self._initialize_result_writer("segment")
+
+        for batch in self.client.get_segments(fields_segment=["name", "definition"], include=["tags"]):
+            for item in batch:
+                name = item["attributes"].get("name")
+                definition = item["attributes"].get("definition")
+                tag_id = item.get("relationships", {}).get("tags", {}).get("id")
+                self._get_result_writer("segment").writerow({"id": item["id"], "name": name, "tag_id": tag_id,
+                                                             "definition": definition})
 
     def get_catalogs(self) -> None:
         self.fetch_and_write_object_data("catalog_item", self.client.get_catalog_items)
@@ -151,21 +158,21 @@ class Component(ComponentBase):
         parser = FlattenJsonParser()
 
         for channel in channels:
-            for item in self.client.get_campaigns(channel=channel):
+            for batch in self.client.get_campaigns(channel=channel):
+                for item in batch:
+                    audiences = item.get("attributes").pop("audiences")
+                    included_audiences = audiences.get("included")
+                    excluded_audiences = audiences.get("excluded")
 
-                audiences = item.get("attributes").pop("audiences")
-                included_audiences = audiences.get("included")
-                excluded_audiences = audiences.get("excluded")
+                    for included_audience in included_audiences:
+                        self._get_result_writer("campaign_audience").writerow(
+                            {"campaign_id": item["id"], "list_id": included_audience})
+                    for excluded_audiences in excluded_audiences:
+                        self._get_result_writer("campaign_excluded_audience").writerow(
+                            {"campaign_id": item["id"], "list_id": excluded_audiences})
 
-                for included_audience in included_audiences:
-                    self._get_result_writer("campaign_audience").writerow(
-                        {"campaign_id": item["id"], "list_id": included_audience})
-                for excluded_audiences in excluded_audiences:
-                    self._get_result_writer("campaign_excluded_audience").writerow(
-                        {"campaign_id": item["id"], "list_id": excluded_audiences})
-
-                parsed_attributes = parser.parse_row(item["attributes"])
-                self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
+                    parsed_attributes = parser.parse_row(item["attributes"])
+                    self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
 
     def get_events(self) -> None:
         params = self.configuration.parameters
@@ -299,7 +306,10 @@ class Component(ComponentBase):
             logging.info("Validating Profile fetching parameters...")
             segments = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, [])
             for segment_id in segments:
-                self.client.get_segment(segment_id)
+                try:
+                    self.client.get_segment(segment_id)
+                except KlaviyoClientException as e:
+                    raise UserException(f"Segment with ID {segment_id} not found.") from e
             logging.info("Profile fetching parameters are valid")
 
         # Validate if list ids for profile fetching are valid
