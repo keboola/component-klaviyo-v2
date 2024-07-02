@@ -1,3 +1,4 @@
+import backoff
 import json
 import logging
 from typing import Iterator, Callable, Dict, List, Tuple
@@ -84,8 +85,13 @@ class KlaviyoClient:
                                               filter=f"equals(messages.channel,'{channel}')")
 
     def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Iterator[List[Dict]]:
+
+        @backoff.on_exception(backoff.expo, OpenApiException, max_tries=5, factor=5)
+        def fetch_page(**kwargs):
+            return endpoint_func(**kwargs)
+
         try:
-            current_page = endpoint_func(**kwargs)
+            current_page = fetch_page(**kwargs)
         except OpenApiException as api_exc:
             error_message = self._process_error(api_exc)
             raise KlaviyoClientException(error_message) from api_exc
@@ -93,7 +99,7 @@ class KlaviyoClient:
 
         while next_page := current_page.get("links").get("next"):
             try:
-                current_page = endpoint_func(**kwargs, page_cursor=next_page)
+                current_page = fetch_page(**kwargs, page_cursor=next_page)
             except OpenApiException as api_exc:
                 error_message = self._process_error(api_exc)
                 raise KlaviyoClientException(error_message) from api_exc
