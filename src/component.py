@@ -29,6 +29,7 @@ KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
 KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS = "fetch_campaign_channels"
 
 KEY_EVENTS_SETTINGS = "events_settings"
+KEY_SHORTEN_COLUMN_NAMES = "shorten_column_names"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
 KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
@@ -125,7 +126,7 @@ class Component(ComponentBase):
         new_dict = {}
         for key, value in row.items():
             if key.startswith('event_properties_'):
-                new_key = key.replace('event_properties_', 'prop_')
+                new_key = key.replace('event_properties_', 'ep_')
                 new_dict[new_key] = value
             else:
                 new_dict[key] = value
@@ -193,7 +194,7 @@ class Component(ComponentBase):
     def get_events(self) -> None:
         params = self.configuration.parameters
         event_settings = params.get(KEY_EVENTS_SETTINGS)
-        shorten_col_names = event_settings.get("shorten_column_names", False)
+        shorten_col_names = event_settings.get(KEY_SHORTEN_COLUMN_NAMES, False)
 
         from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
         to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))

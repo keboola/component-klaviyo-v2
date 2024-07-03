@@ -69,6 +69,7 @@ Configuration
     fetch data from the last run of the component.
   - Fetch Events To Date (date_to) - [OPT] Date to which event data is downloaded. Either date in YYYY-MM-DD format or
     relative date string i.e. 5 days ago, 1 month ago, now, etc.
+  - Shorten Column Names (shorten_column_names) - [OPT] Boolean value to indicate if column names should be shortened - `event_properties_` prefix is replaced with `ep_`.
 - Flows : Additional Options (flows_settings) - [OPT] Additional options if flows are being downloaded
   - Fetch Flow Actions (fetch_flows) - [OPT] Boolean value to indicate if flow actions should be fetched
 - Profiles : Additional Options (profiles_settings) - [OPT] Additional options if profiles are being downloaded
