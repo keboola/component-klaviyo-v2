@@ -151,13 +151,11 @@ class Component(ComponentBase):
     def get_segments(self) -> None:
         self._initialize_result_writer("segment")
 
-        for batch in self.client.get_segments(fields_segment=["name", "definition"], include=["tags"]):
+        for batch in self.client.get_segments(fields_segment=["name", "definition"]):
             for item in batch:
                 name = item["attributes"].get("name")
                 definition = item["attributes"].get("definition")
-                tag_id = item.get("relationships", {}).get("tags", {}).get("id")
-                self._get_result_writer("segment").writerow({"id": item["id"], "name": name, "tag_id": tag_id,
-                                                             "definition": definition})
+                self._get_result_writer("segment").writerow({"id": item["id"], "name": name, "definition": definition})
 
     def get_catalogs(self) -> None:
         self.fetch_and_write_object_data("catalog_item", self.client.get_catalog_items)
