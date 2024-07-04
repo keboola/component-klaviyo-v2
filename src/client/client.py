@@ -60,9 +60,8 @@ class KlaviyoClient:
     def get_profiles(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Profiles.get_profiles)
 
-    def get_segments(self, fields_segment: list[str], include: list[str]) -> Iterator[List[Dict]]:
-        return self._paginate_cursor_endpoint(self.client.Segments.get_segments, fields_segment=fields_segment,
-                                              include=include)
+    def get_segments(self, fields_segment: list[str]) -> Iterator[List[Dict]]:
+        return self._paginate_cursor_endpoint(self.client.Segments.get_segments, fields_segment=fields_segment)
 
     def get_segment(self, segment_id):
         try:
