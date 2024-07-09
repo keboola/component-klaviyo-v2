@@ -114,10 +114,39 @@
         }
       }
     },
+    "campaigns_settings": {
+      "title": "Campaigns - Channel Options",
+      "type": "array",
+      "items": {
+        "enum": [
+          "email",
+          "sms"
+        ],
+        "type": "string"
+      },
+      "propertyOrder": 40,
+      "options": {
+        "dependencies": {
+          "campaigns_hidden": "true"
+        }
+      },
+      "properties": {
+        "fetch_campaign_channels": {
+          "title": "Fetch Campaign Channels",
+          "propertyOrder": 10,
+          "format": "string",
+          "enum": [
+            "email",
+            "sms"
+          ],
+          "default": true
+        }
+      }
+    },
     "events_settings": {
       "title": "Events - Additional Options",
       "type": "object",
-      "propertyOrder": 40,
+      "propertyOrder": 50,
       "options": {
         "dependencies": {
           "events_hidden": "true"
@@ -137,6 +166,14 @@
           "type": "string",
           "description": "Date to which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
           "default": "now"
+        },
+        "shorten_column_names": {
+          "title": "Shorten Column Names",
+          "propertyOrder": 30,
+          "format": "checkbox",
+          "type": "boolean",
+          "description": "Shorten event table column prefixes to prevent reaching 64 characters limit.",
+          "default": false
         }
       }
     },
@@ -174,7 +211,7 @@
           "uniqueItems": true,
           "description": "Select which List IDs you wish to fetch profiles for",
           "type": "array",
-          "format" : "select",
+          "format": "select",
           "items": {
             "enum": [],
             "type": "string"
@@ -194,7 +231,7 @@
           "propertyOrder": 30,
           "description": "Select which Segment IDs you wish to fetch profiles for",
           "type": "array",
-          "format" : "select",
+          "format": "select",
           "uniqueItems": true,
           "items": {
             "enum": [],
@@ -204,7 +241,7 @@
             "dependencies": {
               "fetch_profiles_mode": "fetch_by_segment"
             },
-             "async": {
+            "async": {
               "label": "Load Segment IDs",
               "action": "loadSegmentIds"
             }
@@ -213,55 +250,54 @@
       }
     },
     "campaigns_hidden": {
-          "type": "string",
-          "watch": {
-            "campaigns_hidden": "rootschema.objects.campaigns"
-          },
-          "options": {
-            "hidden": true
-          },
-          "template": "{{campaigns_hidden}}"
-        },
+      "type": "string",
+      "watch": {
+        "campaigns_hidden": "rootschema.objects.campaigns"
+      },
+      "options": {
+        "hidden": true
+      },
+      "template": "{{campaigns_hidden}}"
+    },
     "catalogs_hidden": {
-          "type": "string",
-          "watch": {
-            "catalogs_hidden": "rootschema.objects.catalogs"
-          },
-          "options": {
-            "hidden": true
-          },
-          "template": "{{catalogs_hidden}}"
-        },
+      "type": "string",
+      "watch": {
+        "catalogs_hidden": "rootschema.objects.catalogs"
+      },
+      "options": {
+        "hidden": true
+      },
+      "template": "{{catalogs_hidden}}"
+    },
     "events_hidden": {
-          "type": "string",
-          "watch": {
-            "events_hidden": "rootschema.objects.events"
-          },
-          "options": {
-            "hidden": true
-          },
-          "template": "{{events_hidden}}"
-        },
+      "type": "string",
+      "watch": {
+        "events_hidden": "rootschema.objects.events"
+      },
+      "options": {
+        "hidden": true
+      },
+      "template": "{{events_hidden}}"
+    },
     "flows_hidden": {
-          "type": "string",
-          "watch": {
-            "flows_hidden": "rootschema.objects.flows"
-          },
-          "options": {
-            "hidden": true
-          },
-          "template": "{{flows_hidden}}"
-        },
+      "type": "string",
+      "watch": {
+        "flows_hidden": "rootschema.objects.flows"
+      },
+      "options": {
+        "hidden": true
+      },
+      "template": "{{flows_hidden}}"
+    },
     "profiles_hidden": {
-          "type": "string",
-          "watch": {
-            "profiles_hidden": "rootschema.objects.profiles"
-          },
-          "options": {
-            "hidden": true
-          },
-          "template": "{{profiles_hidden}}"
-        }
-
+      "type": "string",
+      "watch": {
+        "profiles_hidden": "rootschema.objects.profiles"
+      },
+      "options": {
+        "hidden": true
+      },
+      "template": "{{profiles_hidden}}"
+    }
   }
 }

@@ -1,3 +1,4 @@
+import backoff
 import json
 import logging
 from typing import Iterator, Callable, Dict, List, Tuple
@@ -59,8 +60,8 @@ class KlaviyoClient:
     def get_profiles(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Profiles.get_profiles)
 
-    def get_segments(self) -> Iterator[List[Dict]]:
-        return self._paginate_cursor_endpoint(self.client.Segments.get_segments)
+    def get_segments(self, fields_segment: list[str]) -> Iterator[List[Dict]]:
+        return self._paginate_cursor_endpoint(self.client.Segments.get_segments, fields_segment=fields_segment)
 
     def get_segment(self, segment_id):
         try:
@@ -70,7 +71,7 @@ class KlaviyoClient:
             raise KlaviyoClientException(error_message) from api_exc
 
     def get_segment_profiles(self, segment_id: str) -> Iterator[List[Dict]]:
-        return self._paginate_cursor_endpoint(self.client.Segments.get_segment_profiles, segment_id=segment_id)
+        return self._paginate_cursor_endpoint(self.client.Segments.get_segment_profiles, id=segment_id)
 
     def get_flows(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Flows.get_flows)
@@ -78,12 +79,18 @@ class KlaviyoClient:
     def get_templates(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Templates.get_templates)
 
-    def get_campaigns(self) -> Iterator[List[Dict]]:
-        return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaigns)
+    def get_campaigns(self, channel: str) -> Iterator[List[Dict]]:
+        return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaigns,
+                                              filter=f"equals(messages.channel,'{channel}')")
 
     def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Iterator[List[Dict]]:
+
+        @backoff.on_exception(backoff.expo, OpenApiException, max_tries=5, factor=5)
+        def fetch_page(**kwargs):
+            return endpoint_func(**kwargs)
+
         try:
-            current_page = endpoint_func(**kwargs)
+            current_page = fetch_page(**kwargs)
         except OpenApiException as api_exc:
             error_message = self._process_error(api_exc)
             raise KlaviyoClientException(error_message) from api_exc
@@ -91,7 +98,7 @@ class KlaviyoClient:
 
         while next_page := current_page.get("links").get("next"):
             try:
-                current_page = endpoint_func(**kwargs, page_cursor=next_page)
+                current_page = fetch_page(**kwargs, page_cursor=next_page)
             except OpenApiException as api_exc:
                 error_message = self._process_error(api_exc)
                 raise KlaviyoClientException(error_message) from api_exc
@@ -142,7 +149,11 @@ class KlaviyoClient:
         # test scopes
         for scope in test_scopes:
             try:
-                test_scopes[scope]()
+                if scope == "campaigns":
+                    test_scopes[scope](filter="equals(messages.channel,'email')")
+                else:
+                    test_scopes[scope]()
+
                 valid_token = True
             except OpenApiException as e:
                 json_resp = json.loads(e.body)

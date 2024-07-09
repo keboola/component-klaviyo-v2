@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 import warnings
 from typing import List, Callable, Dict
@@ -7,8 +8,9 @@ import dateparser
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.dao import TableDefinition
 from keboola.component.exceptions import UserException
-from keboola.component.sync_actions import ValidationResult, MessageType
+from keboola.component.sync_actions import ValidationResult, MessageType, SelectElement
 from keboola.csvwriter import ElasticDictWriter
+from keboola.utils import header_normalizer
 
 from client import KlaviyoClient, KlaviyoClientException
 from json_parser import FlattenJsonParser
@@ -23,7 +25,11 @@ KEY_DATE_TO = "date_to"
 KEY_CATALOGS_SETTINGS = "catalogs_settings"
 KEY_CATALOGS_SETTINGS_FETCH_CATALOG_CATEGORIES = "fetch_catalog_categories"
 
+KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
+KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS = "fetch_campaign_channels"
+
 KEY_EVENTS_SETTINGS = "events_settings"
+KEY_SHORTEN_COLUMN_NAMES = "shorten_column_names"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
 KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
@@ -93,7 +99,7 @@ class Component(ComponentBase):
         api_token = params.get(KEY_API_TOKEN)
         self.client = KlaviyoClient(api_token=api_token)
 
-    def fetch_and_write_object_data(self, object_name: str, data_generator: Callable,
+    def fetch_and_write_object_data(self, object_name: str, data_generator: Callable, shorten_col_names: bool = False,
                                     **data_generator_kwargs) -> None:
         self._initialize_result_writer(object_name)
         parser = FlattenJsonParser()
@@ -108,7 +114,23 @@ class Component(ComponentBase):
                 logging.info(f"Already fetched {i} pages of data of object {object_name}")
             for item in page:
                 parsed_attributes = parser.parse_row(item["attributes"])
-                self._get_result_writer(object_name).writerow({"id": item["id"], **parsed_attributes, **extra_data})
+                row = {"id": item["id"], **parsed_attributes, **extra_data}
+
+                if shorten_col_names and object_name == "event":
+                    row = self._shorten_event_properties_keys(row)
+
+                self._get_result_writer(object_name).writerow(row)
+
+    @staticmethod
+    def _shorten_event_properties_keys(row: dict) -> dict:
+        new_dict = {}
+        for key, value in row.items():
+            if key.startswith('event_properties_'):
+                new_key = key.replace('event_properties_', 'ep_')
+                new_dict[new_key] = value
+            else:
+                new_dict[key] = value
+        return new_dict
 
     def _add_columns_from_state_to_table_definition(self, object_name: str,
                                                     table_definition: TableDefinition) -> TableDefinition:
@@ -127,7 +149,13 @@ class Component(ComponentBase):
         self.fetch_and_write_object_data("list", self.client.get_lists)
 
     def get_segments(self) -> None:
-        self.fetch_and_write_object_data("segment", self.client.get_segments)
+        self._initialize_result_writer("segment")
+
+        for batch in self.client.get_segments(fields_segment=["name", "definition"]):
+            for item in batch:
+                name = item["attributes"].get("name")
+                definition = item["attributes"].get("definition")
+                self._get_result_writer("segment").writerow({"id": item["id"], "name": name, "definition": definition})
 
     def get_catalogs(self) -> None:
         self.fetch_and_write_object_data("catalog_item", self.client.get_catalog_items)
@@ -137,35 +165,40 @@ class Component(ComponentBase):
             self.fetch_and_write_object_data("catalog_categories", self.client.get_catalog_categories)
 
     def get_campaigns(self) -> None:
+        channels = self.configuration.parameters.get(KEY_CAMPAIGNS_SETTINGS, ["email", "sms"])
+
         self._initialize_result_writer("campaign")
         self._initialize_result_writer("campaign_audience")
         self._initialize_result_writer("campaign_excluded_audience")
         parser = FlattenJsonParser()
 
-        for page in self.client.get_campaigns():
-            for item in page:
+        for channel in channels:
+            for batch in self.client.get_campaigns(channel=channel):
+                for item in batch:
+                    audiences = item.get("attributes").pop("audiences")
+                    included_audiences = audiences.get("included")
+                    excluded_audiences = audiences.get("excluded")
 
-                audiences = item.get("attributes").pop("audiences")
-                included_audiences = audiences.get("included")
-                excluded_audiences = audiences.get("excluded")
+                    for included_audience in included_audiences:
+                        self._get_result_writer("campaign_audience").writerow(
+                            {"campaign_id": item["id"], "list_id": included_audience})
+                    for excluded_audiences in excluded_audiences:
+                        self._get_result_writer("campaign_excluded_audience").writerow(
+                            {"campaign_id": item["id"], "list_id": excluded_audiences})
 
-                for included_audience in included_audiences:
-                    self._get_result_writer("campaign_audience").writerow(
-                        {"campaign_id": item["id"], "list_id": included_audience})
-                for excluded_audiences in excluded_audiences:
-                    self._get_result_writer("campaign_excluded_audience").writerow(
-                        {"campaign_id": item["id"], "list_id": excluded_audiences})
-
-                parsed_attributes = parser.parse_row(item["attributes"])
-                self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
+                    parsed_attributes = parser.parse_row(item["attributes"])
+                    self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
 
     def get_events(self) -> None:
         params = self.configuration.parameters
         event_settings = params.get(KEY_EVENTS_SETTINGS)
+        shorten_col_names = event_settings.get(KEY_SHORTEN_COLUMN_NAMES, False)
 
         from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
         to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
-        self.fetch_and_write_object_data("event", self.client.get_events, from_timestamp_value=from_timestamp,
+        self.fetch_and_write_object_data("event", self.client.get_events,
+                                         shorten_col_names=shorten_col_names,
+                                         from_timestamp_value=from_timestamp,
                                          to_timestamp_value=to_timestamp)
 
     def get_profiles(self) -> None:
@@ -226,7 +259,17 @@ class Component(ComponentBase):
             writer_columns = copy.deepcopy(writer.fieldnames)
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
 
+            deduped_columns = table_definition.columns.copy()
+            normalized_headers = self._normalize_headers(deduped_columns)
+            table_definition.columns = normalized_headers
+
             self.write_manifest(table_definition)
+
+    @staticmethod
+    def _normalize_headers(columns: List[str]) -> List[str]:
+        head_norm = header_normalizer.get_normalizer(strategy=header_normalizer.NormalizerStrategy.ENCODER,
+                                                     char_encoder="unicode")
+        return head_norm.normalize_header(columns)
 
     def _deduplicate_column_names_and_metadata(self, table_definition: TableDefinition,
                                                columns: List[str]) -> TableDefinition:
@@ -281,7 +324,10 @@ class Component(ComponentBase):
             logging.info("Validating Profile fetching parameters...")
             segments = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, [])
             for segment_id in segments:
-                self.client.get_segment(segment_id)
+                try:
+                    self.client.get_segment(segment_id)
+                except KlaviyoClientException as e:
+                    raise UserException(f"Segment with ID {segment_id} not found.") from e
             logging.info("Profile fetching parameters are valid")
 
         # Validate if list ids for profile fetching are valid
@@ -320,17 +366,26 @@ class Component(ComponentBase):
 
         return result
 
-    @sync_action('loadListIds')
-    def load_list_ids(self) -> List[Dict]:
+    @sync_action("loadListIds")
+    def load_list_ids(self) -> [SelectElement]:
         self._init_client()
-        list_ids = self.client.get_list_ids()
-        return [{"label": list_id.get("name"), "value": list_id.get("id")} for list_id in list_ids]
+        try:
+            list_ids = self.client.get_list_ids()
+            r = [SelectElement(value=list_id.get("id"), label=json.dumps(list_id.get("name"))) for list_id in list_ids]
+        except Exception as e:
+            raise UserException(e) from e
+        return r
 
-    @sync_action('loadSegmentIds')
-    def load_segment_ids(self) -> List[Dict]:
+    @sync_action("loadSegmentIds")
+    def load_segment_ids(self) -> [SelectElement]:
         self._init_client()
-        segment_ids = self.client.get_segment_ids()
-        return [{"label": segment_id.get("name"), "value": segment_id.get("id")} for segment_id in segment_ids]
+        try:
+            segment_ids = self.client.get_segment_ids()
+            r = [SelectElement(value=segment_id.get("id"), label=json.dumps(segment_id.get("name")))
+                 for segment_id in segment_ids]
+        except Exception as e:
+            raise UserException(e) from e
+        return r
 
 
 if __name__ == "__main__":

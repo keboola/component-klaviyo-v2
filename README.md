@@ -60,7 +60,7 @@ Configuration
   - Flows (flows)
   - Templates (templates)
 - Campaigns : Additional Options (campaigns_settings) - [OPT] Additional options if campaigns are being downloaded
-  - Fetch Campaign Recipients (fetch_campaign_recipients) - [OPT] Boolean value to indicate if campaign recipients should be extracted for each campaign
+  - Channel Options (fetch_campaign_channels) - [OPT] Campaign channels (sms, email). Defaults to all channels.
 - Catalogs : Additional Options (catalogs_settings) - [OPT] Additional options if catalogs are being downloaded
   - Fetch Catalog Categories (fetch_catalog_categories) - [OPT] Boolean value to indicate if catalog categories should be fetched
 - Events : Additional Options (events_settings) - [OPT] Additional options if events are being downloaded
@@ -69,6 +69,7 @@ Configuration
     fetch data from the last run of the component.
   - Fetch Events To Date (date_to) - [OPT] Date to which event data is downloaded. Either date in YYYY-MM-DD format or
     relative date string i.e. 5 days ago, 1 month ago, now, etc.
+  - Shorten Column Names (shorten_column_names) - [OPT] Boolean value to indicate if column names should be shortened - `event_properties_` prefix is replaced with `ep_`.
 - Flows : Additional Options (flows_settings) - [OPT] Additional options if flows are being downloaded
   - Fetch Flow Actions (fetch_flows) - [OPT] Boolean value to indicate if flow actions should be fetched
 - Profiles : Additional Options (profiles_settings) - [OPT] Additional options if profiles are being downloaded
@@ -78,6 +79,8 @@ Configuration
 "fetch_by_segment" extracts all profiles contained in specific segments, specified in the list of Segment IDs.        
   - List IDs (fetch_profiles_by_list) - [OPT] array of list IDs
   - Segment IDs (fetch_profiles_by_segment) - [OPT] array of segment IDs
+
+**Note:** Events endpoint contains deeply nested data, which can lead to long column names. This has to be addressed using Rename Columns processor.
 
 Sample Configuration
 =============
