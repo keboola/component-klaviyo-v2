@@ -179,8 +179,6 @@ class Component(ComponentBase):
                     included_audiences = audiences.get("included")
                     excluded_audiences = audiences.get("excluded")
 
-                    self.get_campaign_messages(campaign_id=item["id"])
-
                     for included_audience in included_audiences:
                         self._get_result_writer("campaign_audience").writerow(
                             {"campaign_id": item["id"], "list_id": included_audience})
@@ -190,15 +188,6 @@ class Component(ComponentBase):
 
                     parsed_attributes = parser.parse_row(item["attributes"])
                     self._get_result_writer("campaign").writerow({"id": item["id"], **parsed_attributes})
-
-    def get_campaign_messages(self, campaign_id: str) -> None:
-        self._initialize_result_writer("campaign_message")
-        parser = FlattenJsonParser()
-
-        for batch in self.client.get_campaign_messages(campaign_id=campaign_id):
-            for item in batch:
-                parsed_attributes = parser.parse_row(item["attributes"])
-                self._get_result_writer("campaign_message").writerow({"campaign_id": campaign_id, **parsed_attributes})
 
     def get_events(self) -> None:
         params = self.configuration.parameters

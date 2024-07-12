@@ -81,7 +81,8 @@ class KlaviyoClient:
 
     def get_campaigns(self, channel: str) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaigns,
-                                              filter=f"equals(messages.channel,'{channel}')")
+                                              filter=f"equals(messages.channel,'{channel}')",
+                                              include=["campaign-messages"])
 
     def get_campaign_messages(self, campaign_id: str) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaign_campaign_messages, id=campaign_id)
