@@ -83,6 +83,9 @@ class KlaviyoClient:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaigns,
                                               filter=f"equals(messages.channel,'{channel}')")
 
+    def get_campaign_messages(self, campaign_id: str) -> Iterator[List[Dict]]:
+        return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaign_campaign_messages, id=campaign_id)
+
     def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Iterator[List[Dict]]:
 
         @backoff.on_exception(backoff.expo, OpenApiException, max_tries=5, factor=5)
