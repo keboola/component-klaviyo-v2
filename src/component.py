@@ -29,6 +29,7 @@ KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
 KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS = "fetch_campaign_channels"
 
 KEY_EVENTS_SETTINGS = "events_settings"
+KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
 KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
@@ -80,7 +81,7 @@ class Component(ComponentBase):
         self.new_state["last_run"] = self._parse_date("now")
 
         params = self.configuration.parameters
-        self.store_nested_attributes = params.get("store_nested_attributes", False)
+        self.store_nested_attributes = params.get(KEY_STORE_NESTED_ATTRIBUTES, False)
 
         self._init_client()
         self._validate_user_parameters()

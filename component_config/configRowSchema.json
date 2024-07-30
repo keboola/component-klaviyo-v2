@@ -167,12 +167,12 @@
           "description": "Date to which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
           "default": "now"
         },
-        "shorten_column_names": {
-          "title": "Shorten Column Names",
+        "store_nested_attributes": {
+          "title": "Store Nested Attributes",
           "propertyOrder": 30,
           "format": "checkbox",
           "type": "boolean",
-          "description": "Shorten event table column prefixes to prevent reaching 64 characters limit.",
+          "description": "You can use this options if you are fetching deeply nested attributes and you are encountering Output mapping errors due to 64 characters limit for columns.",
           "default": false
         }
       }
