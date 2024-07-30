@@ -29,7 +29,6 @@ KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
 KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS = "fetch_campaign_channels"
 
 KEY_EVENTS_SETTINGS = "events_settings"
-KEY_SHORTEN_COLUMN_NAMES = "shorten_column_names"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
 KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
@@ -101,8 +100,7 @@ class Component(ComponentBase):
         api_token = params.get(KEY_API_TOKEN)
         self.client = KlaviyoClient(api_token=api_token)
 
-    def fetch_and_write_object_data(self, object_name: str, data_generator: Callable, shorten_col_names: bool = False,
-                                    **data_generator_kwargs) -> None:
+    def fetch_and_write_object_data(self, object_name: str, data_generator: Callable, **data_generator_kwargs) -> None:
         self._initialize_result_writer(object_name)
         parser = FlattenJsonParser()
 
@@ -124,21 +122,7 @@ class Component(ComponentBase):
 
                 row = {"id": item["id"], **parsed_attributes, **extra_data}
 
-                if shorten_col_names and object_name == "event":
-                    row = self._shorten_event_properties_keys(row)
-
                 self._get_result_writer(object_name).writerow(row)
-
-    @staticmethod
-    def _shorten_event_properties_keys(row: dict) -> dict:
-        new_dict = {}
-        for key, value in row.items():
-            if key.startswith('event_properties_'):
-                new_key = key.replace('event_properties_', 'ep_')
-                new_dict[new_key] = value
-            else:
-                new_dict[key] = value
-        return new_dict
 
     def _add_columns_from_state_to_table_definition(self, object_name: str,
                                                     table_definition: TableDefinition) -> TableDefinition:
@@ -211,12 +195,10 @@ class Component(ComponentBase):
     def get_events(self) -> None:
         params = self.configuration.parameters
         event_settings = params.get(KEY_EVENTS_SETTINGS)
-        shorten_col_names = event_settings.get(KEY_SHORTEN_COLUMN_NAMES, False)
 
         from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
         to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
         self.fetch_and_write_object_data("event", self.client.get_events,
-                                         shorten_col_names=shorten_col_names,
                                          from_timestamp_value=from_timestamp,
                                          to_timestamp_value=to_timestamp)
 
