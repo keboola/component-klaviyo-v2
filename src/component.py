@@ -69,6 +69,7 @@ class Component(ComponentBase):
         self.result_writers = {}
         self.state = {}
         self.new_state = {}
+        self.store_nested_attributes = False
         super().__init__()
 
     def run(self):
@@ -80,6 +81,7 @@ class Component(ComponentBase):
         self.new_state["last_run"] = self._parse_date("now")
 
         params = self.configuration.parameters
+        self.store_nested_attributes = params.get("store_nested_attributes", False)
 
         self._init_client()
         self._validate_user_parameters()
@@ -112,8 +114,14 @@ class Component(ComponentBase):
         for i, page in enumerate(data_generator(**data_generator_kwargs)):
             if i > 0 and i % 100 == 0:
                 logging.info(f"Already fetched {i} pages of data of object {object_name}")
+
             for item in page:
-                parsed_attributes = parser.parse_row(item["attributes"])
+
+                if self.store_nested_attributes:
+                    parsed_attributes = item["attributes"]
+                else:
+                    parsed_attributes = parser.parse_row(item["attributes"])
+
                 row = {"id": item["id"], **parsed_attributes, **extra_data}
 
                 if shorten_col_names and object_name == "event":
