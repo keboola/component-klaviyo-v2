@@ -1,0 +1,25 @@
+{
+  "name": "campaign_message",
+  "description": "",
+  "primary_keys": [
+    "campaign_id",
+    "created_at"
+  ],
+  "fields": [
+    {
+      "name": "campaign_id",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "created_at",
+      "description": "",
+      "base_type": "STRING"
+    },
+    {
+      "name": "updated_at",
+      "description": "",
+      "base_type": "STRING"
+    }
+  ]
+}

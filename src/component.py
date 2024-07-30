@@ -29,12 +29,13 @@ KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
 KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS = "fetch_campaign_channels"
 
 KEY_EVENTS_SETTINGS = "events_settings"
-KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
 KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
 KEY_PROFILES_SETTINGS_FETCH_BY_LIST = "fetch_profiles_by_list"
 KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
+
+KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
 REQUIRED_PARAMETERS = [KEY_API_TOKEN, KEY_OBJECTS]
 REQUIRED_IMAGE_PARS = []
