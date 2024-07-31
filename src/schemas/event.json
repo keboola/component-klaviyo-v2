@@ -16,16 +16,6 @@
       "base_type": "STRING"
     },
     {
-      "name": "metric_id",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
-      "name": "profile_id",
-      "description": "",
-      "base_type": "STRING"
-    },
-    {
       "name": "timestamp",
       "description": "",
       "base_type": "STRING"
