@@ -166,14 +166,6 @@
           "type": "string",
           "description": "Date to which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
           "default": "now"
-        },
-        "store_nested_attributes": {
-          "title": "Store Nested Attributes",
-          "propertyOrder": 30,
-          "format": "checkbox",
-          "type": "boolean",
-          "description": "You can use this options if you are fetching deeply nested attributes and you are encountering Output mapping errors due to 64 characters limit for columns.",
-          "default": false
         }
       }
     },
@@ -248,6 +240,14 @@
           }
         }
       }
+    },
+    "store_nested_attributes": {
+          "title": "Store Nested Attributes",
+          "propertyOrder": 30,
+          "format": "checkbox",
+          "type": "boolean",
+          "description": "You can use this options if you are fetching deeply nested attributes and you are encountering Output mapping errors due to 64 characters limit for columns.",
+          "default": false
     },
     "campaigns_hidden": {
       "type": "string",
