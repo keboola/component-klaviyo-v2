@@ -69,7 +69,7 @@ Configuration
     fetch data from the last run of the component.
   - Fetch Events To Date (date_to) - [OPT] Date to which event data is downloaded. Either date in YYYY-MM-DD format or
     relative date string i.e. 5 days ago, 1 month ago, now, etc.
-  - Shorten Column Names (shorten_column_names) - [OPT] Boolean value to indicate if column names should be shortened - `event_properties_` prefix is replaced with `ep_`.
+  - Store nested attributes (store_nested_attributes) - [OPT] You can use this options if you are fetching deeply nested attributes and you are encountering Output mapping errors due to 64 characters limit for columns. This option will store attributes in a single column.
 - Flows : Additional Options (flows_settings) - [OPT] Additional options if flows are being downloaded
   - Fetch Flow Actions (fetch_flows) - [OPT] Boolean value to indicate if flow actions should be fetched
 - Profiles : Additional Options (profiles_settings) - [OPT] Additional options if profiles are being downloaded
@@ -80,7 +80,7 @@ Configuration
   - List IDs (fetch_profiles_by_list) - [OPT] array of list IDs
   - Segment IDs (fetch_profiles_by_segment) - [OPT] array of segment IDs
 
-**Note:** Events endpoint contains deeply nested data, which can lead to long column names. This has to be addressed using Rename Columns processor.
+**Note:** Events endpoint contains deeply nested data, which can lead to long column names. This has to be addressed using Rename Columns processor or using the store_nested_attributes parameter.
 
 Sample Configuration
 =============

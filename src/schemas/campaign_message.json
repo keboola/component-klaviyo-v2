@@ -1,22 +1,23 @@
 {
-  "name": "event",
+  "name": "campaign_message",
   "description": "",
   "primary_keys": [
-    "id"
+    "campaign_id",
+    "created_at"
   ],
   "fields": [
     {
-      "name": "id",
+      "name": "campaign_id",
       "description": "",
       "base_type": "STRING"
     },
     {
-      "name": "uuid",
+      "name": "created_at",
       "description": "",
       "base_type": "STRING"
     },
     {
-      "name": "timestamp",
+      "name": "updated_at",
       "description": "",
       "base_type": "STRING"
     }

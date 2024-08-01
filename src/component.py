@@ -29,12 +29,13 @@ KEY_CAMPAIGNS_SETTINGS = "campaigns_settings"
 KEY_CAMPAIGNS_SETTINGS_FETCH_CAMPAIGN_CHANNELS = "fetch_campaign_channels"
 
 KEY_EVENTS_SETTINGS = "events_settings"
-KEY_SHORTEN_COLUMN_NAMES = "shorten_column_names"
 
 KEY_PROFILES_SETTINGS = "profiles_settings"
 KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
 KEY_PROFILES_SETTINGS_FETCH_BY_LIST = "fetch_profiles_by_list"
 KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
+
+KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
 REQUIRED_PARAMETERS = [KEY_API_TOKEN, KEY_OBJECTS]
 REQUIRED_IMAGE_PARS = []
@@ -69,6 +70,7 @@ class Component(ComponentBase):
         self.result_writers = {}
         self.state = {}
         self.new_state = {}
+        self.store_nested_attributes = False
         super().__init__()
 
     def run(self):
@@ -80,6 +82,7 @@ class Component(ComponentBase):
         self.new_state["last_run"] = self._parse_date("now")
 
         params = self.configuration.parameters
+        self.store_nested_attributes = params.get(KEY_STORE_NESTED_ATTRIBUTES, False)
 
         self._init_client()
         self._validate_user_parameters()
@@ -99,8 +102,7 @@ class Component(ComponentBase):
         api_token = params.get(KEY_API_TOKEN)
         self.client = KlaviyoClient(api_token=api_token)
 
-    def fetch_and_write_object_data(self, object_name: str, data_generator: Callable, shorten_col_names: bool = False,
-                                    **data_generator_kwargs) -> None:
+    def fetch_and_write_object_data(self, object_name: str, data_generator: Callable, **data_generator_kwargs) -> None:
         self._initialize_result_writer(object_name)
         parser = FlattenJsonParser()
 
@@ -112,25 +114,17 @@ class Component(ComponentBase):
         for i, page in enumerate(data_generator(**data_generator_kwargs)):
             if i > 0 and i % 100 == 0:
                 logging.info(f"Already fetched {i} pages of data of object {object_name}")
+
             for item in page:
-                parsed_attributes = parser.parse_row(item["attributes"])
+
+                if self.store_nested_attributes:
+                    parsed_attributes = item["attributes"]
+                else:
+                    parsed_attributes = parser.parse_row(item["attributes"])
+
                 row = {"id": item["id"], **parsed_attributes, **extra_data}
 
-                if shorten_col_names and object_name == "event":
-                    row = self._shorten_event_properties_keys(row)
-
                 self._get_result_writer(object_name).writerow(row)
-
-    @staticmethod
-    def _shorten_event_properties_keys(row: dict) -> dict:
-        new_dict = {}
-        for key, value in row.items():
-            if key.startswith('event_properties_'):
-                new_key = key.replace('event_properties_', 'ep_')
-                new_dict[new_key] = value
-            else:
-                new_dict[key] = value
-        return new_dict
 
     def _add_columns_from_state_to_table_definition(self, object_name: str,
                                                     table_definition: TableDefinition) -> TableDefinition:
@@ -203,12 +197,10 @@ class Component(ComponentBase):
     def get_events(self) -> None:
         params = self.configuration.parameters
         event_settings = params.get(KEY_EVENTS_SETTINGS)
-        shorten_col_names = event_settings.get(KEY_SHORTEN_COLUMN_NAMES, False)
 
         from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
         to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
         self.fetch_and_write_object_data("event", self.client.get_events,
-                                         shorten_col_names=shorten_col_names,
                                          from_timestamp_value=from_timestamp,
                                          to_timestamp_value=to_timestamp)
 
