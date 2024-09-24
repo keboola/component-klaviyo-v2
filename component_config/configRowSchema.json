@@ -70,7 +70,7 @@
           "title": "Profiles",
           "format": "checkbox",
           "type": "boolean",
-          "default": false,
+          "default": true,
           "options": {
             "grid_columns": 3
           }
@@ -86,6 +86,15 @@
         },
         "templates": {
           "title": "Templates",
+          "format": "checkbox",
+          "type": "boolean",
+          "default": true,
+          "options": {
+            "grid_columns": 3
+          }
+        },
+        "metric_aggregates": {
+          "title": "Metric aggregates",
           "format": "checkbox",
           "type": "boolean",
           "default": true,
@@ -241,13 +250,91 @@
         }
       }
     },
-    "store_nested_attributes": {
-          "title": "Store Nested Attributes",
+    "metric_aggregates": {
+      "title": "Metric aggregates - Additional Options",
+      "type": "object",
+      "propertyOrder": 70,
+      "options": {
+        "dependencies": {
+          "metric_aggregates_hidden": "true"
+        }
+      },
+      "properties": {
+        "metric_aggregates_ids": {
+          "title": "Metric IDs",
+          "propertyOrder": 10,
+          "description": "Select which Metric IDs you wish to download aggregates values for.",
+          "type": "array",
+          "format": "select",
+          "uniqueItems": true,
+          "items": {
+            "enum": [],
+            "type": "string"
+          },
+          "options": {
+            "async": {
+              "label": "Load Metric IDs",
+              "action": "loadMetricIds"
+            }
+          }
+        },
+        "metric_aggregates_date_from": {
+          "title": "Aggregated date range from",
+          "propertyOrder": 20,
+          "type": "string",
+          "description": "The date from which aggregated metrics are downloaded. The date format is YYYY-MM-DD. The maximum date range is 1 year."
+        },
+        "metric_aggregates_date_to": {
+          "title": "Aggregated date range to",
           "propertyOrder": 30,
-          "format": "checkbox",
-          "type": "boolean",
-          "description": "You can use this options if you are fetching deeply nested attributes and you are encountering Output mapping errors due to 64 characters limit for columns.",
-          "default": false
+          "type": "string",
+          "description": "The date to which aggregated metrics are downloaded. The date format is YYYY-MM-DD. The maximum date range is 1 year."
+        },
+        "metric_aggregates_measurements": {
+          "title": "Measurements",
+          "propertyOrder": 40,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "unique",
+              "sum_value",
+              "count"
+            ]
+          },
+          "properties": {
+            "metric_aggregates_measurements_keys": {
+              "propertyOrder": 10,
+              "type": "string",
+              "enum": [
+                "unique",
+                "sum_value",
+                "count"
+              ]
+            }
+          }
+        },
+        "metric_aggregates_interval": {
+          "title": "Aggregate interval",
+          "propertyOrder": 50,
+          "type": "string",
+          "enum": [
+            "hour",
+            "day",
+            "week",
+            "month"
+          ],
+          "default": "day"
+        }
+      }
+    },
+    "store_nested_attributes": {
+      "title": "Store Nested Attributes",
+      "propertyOrder": 30,
+      "format": "checkbox",
+      "type": "boolean",
+      "description": "You can use this options if you are fetching deeply nested attributes and you are encountering Output mapping errors due to 64 characters limit for columns.",
+      "default": false
     },
     "campaigns_hidden": {
       "type": "string",
@@ -293,6 +380,16 @@
       "type": "string",
       "watch": {
         "profiles_hidden": "rootschema.objects.profiles"
+      },
+      "options": {
+        "hidden": true
+      },
+      "template": "{{profiles_hidden}}"
+    },
+    "metric_aggregates_hidden": {
+      "type": "string",
+      "watch": {
+        "profiles_hidden": "rootschema.objects.metric_aggregates"
       },
       "options": {
         "hidden": true
