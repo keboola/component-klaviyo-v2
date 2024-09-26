@@ -54,11 +54,11 @@ class KlaviyoClient:
         for page in self._paginate_cursor_endpoint(self.client.Segments.get_segments):
             all_segment_ids.extend({"id": row.get("id"), "name": row.get("attributes").get("name")} for row in page)
         return all_segment_ids
-    
+
     def get_metric_ids(self) -> List[Dict]:
         all_metric_ids = []
         for page in self._paginate_cursor_endpoint(self.client.Metrics.get_metrics):
-            all_metric_ids.extend({"id": row.get("id"), "name": row.get("attributes").get("name")} for row in page)     
+            all_metric_ids.extend({"id": row.get("id"), "name": row.get("attributes").get("name")} for row in page)
         return all_metric_ids
 
     def get_list_profiles(self, list_id: str) -> Iterator[List[Dict]]:
@@ -92,8 +92,12 @@ class KlaviyoClient:
 
     def get_campaign_messages(self, campaign_id: str) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaign_campaign_messages, id=campaign_id)
-    
-    def query_metric_aggregates(self,metric_id: str, interval: str, from_timestamp: str, to_timestamp: str) -> Iterator[List[Dict]]:
+
+    def query_metric_aggregates(self,
+                                metric_id: str,
+                                interval: str,
+                                from_timestamp: str,
+                                to_timestamp: str) -> Iterator[List[Dict]]:
         metric_aggregate_query = {
             "data": {
                 "type": "metric-aggregate",
@@ -119,18 +123,15 @@ class KlaviyoClient:
         }
         for page in self._paginate_cursor_endpoint(
             self.client.Metrics.query_metric_aggregates,
-            metric_aggregate_query=MetricAggregateQuery.from_dict(metric_aggregate_query)
-            ):
-            yield self._normalize_aggregated_response(page,metric_id)
+                metric_aggregate_query=MetricAggregateQuery.from_dict(metric_aggregate_query)):
+            yield self._normalize_aggregated_response(page, metric_id)
 
-    def _normalize_aggregated_response(self ,json_data: Dict, metric_id: str) -> Dict:
+    def _normalize_aggregated_response(self, json_data: Dict, metric_id: str) -> Dict:
         transformed_data = []
-        
         dates = json_data["attributes"]["dates"]
         counts = json_data["attributes"]["data"][0]["measurements"]["count"]
         uniques = json_data["attributes"]["data"][0]["measurements"]["unique"]
         sum_value = json_data["attributes"]["data"][0]["measurements"]["sum_value"]
-        
         for idx, date in enumerate(dates):
             record = {
                 "type": "metric_aggregate",
@@ -146,7 +147,7 @@ class KlaviyoClient:
             transformed_data.append(record)
 
         return transformed_data
-    
+
     def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Iterator[List[Dict]]:
 
         @backoff.on_exception(backoff.expo, OpenApiException, max_tries=5, factor=5)

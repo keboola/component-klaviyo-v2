@@ -71,7 +71,7 @@ class Component(ComponentBase):
             "profiles": self.get_profiles,
             "flows": self.get_flows,
             "templates": self.get_templates,
-            "metric_aggregates" : self.get_metric_aggregates
+            "metric_aggregates": self.get_metric_aggregates
         }
         self.client = None
         self.result_writers = {}
@@ -234,7 +234,8 @@ class Component(ComponentBase):
         self.fetch_and_write_object_data("flow", self.client.get_flows)
 
     def get_templates(self) -> None:
-        self.fetch_and_write_object_data("template", self.client.get_templates)        
+        self.fetch_and_write_object_data("template", self.client.get_templates)
+
     def get_metric_aggregates(self) -> None:
         params = self.configuration.parameters
         metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
@@ -246,10 +247,10 @@ class Component(ComponentBase):
             self.fetch_and_write_object_data(
                 "metric_aggregates",
                 self.client.query_metric_aggregates,
-                metric_id = id,
-                interval = interval,
-                from_timestamp = from_timestamp,
-                to_timestamp = to_timestamp
+                metric_id=id,
+                interval=interval,
+                from_timestamp=from_timestamp,
+                to_timestamp=to_timestamp
                 )
 
     def _parse_date(self, date_to_parse: str) -> int:
@@ -423,6 +424,7 @@ class Component(ComponentBase):
         except Exception as e:
             raise UserException(e) from e
         return r
+
 
 if __name__ == "__main__":
     try:
