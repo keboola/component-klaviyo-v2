@@ -5,6 +5,7 @@ from typing import Iterator, Callable, Dict, List, Tuple
 
 from klaviyo_api import KlaviyoAPI
 from openapi_client.exceptions import OpenApiException
+from openapi_client.models import MetricAggregateQuery
 
 MAX_DELAY = 60
 MAX_RETRIES = 5
@@ -53,6 +54,12 @@ class KlaviyoClient:
         for page in self._paginate_cursor_endpoint(self.client.Segments.get_segments):
             all_segment_ids.extend({"id": row.get("id"), "name": row.get("attributes").get("name")} for row in page)
         return all_segment_ids
+    
+    def get_metric_ids(self) -> List[Dict]:
+        all_metric_ids = []
+        for page in self._paginate_cursor_endpoint(self.client.Metrics.get_metrics):
+            all_metric_ids.extend({"id": row.get("id"), "name": row.get("attributes").get("name")} for row in page)     
+        return all_metric_ids
 
     def get_list_profiles(self, list_id: str) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Lists.get_list_profiles, list_id=list_id)
@@ -85,7 +92,61 @@ class KlaviyoClient:
 
     def get_campaign_messages(self, campaign_id: str) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaign_campaign_messages, id=campaign_id)
+    
+    def query_metric_aggregates(self,metric_id: str, interval: str, from_timestamp: str, to_timestamp: str) -> Iterator[List[Dict]]:
+        metric_aggregate_query = {
+            "data": {
+                "type": "metric-aggregate",
+                "attributes": {
+                    "interval": interval,
+                    "page_size": None,
+                    "timezone": "UTC",
+                    "measurements": [
+                        "count",
+                        "unique",
+                        "sum_value"
+                        ],
+                    "by": None,
+                    "return_fields": None,
+                    "filter": [
+                        f"greater-or-equal(datetime,{from_timestamp}T00:00:00)",
+                        f"less-than(datetime,{to_timestamp}T00:00:00)"
+                        ],
+                    "metric_id": metric_id,
+                    "sort": None
+                }
+            }
+        }
+        for page in self._paginate_cursor_endpoint(
+            self.client.Metrics.query_metric_aggregates,
+            metric_aggregate_query=MetricAggregateQuery.from_dict(metric_aggregate_query)
+            ):
+            yield self._normalize_aggregated_response(page,metric_id)
 
+    def _normalize_aggregated_response(self ,json_data: Dict, metric_id: str) -> Dict:
+        transformed_data = []
+        
+        dates = json_data["attributes"]["dates"]
+        counts = json_data["attributes"]["data"][0]["measurements"]["count"]
+        uniques = json_data["attributes"]["data"][0]["measurements"]["unique"]
+        sum_value = json_data["attributes"]["data"][0]["measurements"]["sum_value"]
+        
+        for idx, date in enumerate(dates):
+            record = {
+                "type": "metric_aggregate",
+                "id": f"{date}_{metric_id}",
+                "attributes": {
+                    "metric_id": metric_id,
+                    "date": date,
+                    "count": counts[idx],
+                    "unique": uniques[idx],
+                    "sum_value": sum_value[idx]
+                }
+            }
+            transformed_data.append(record)
+
+        return transformed_data
+    
     def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Iterator[List[Dict]]:
 
         @backoff.on_exception(backoff.expo, OpenApiException, max_tries=5, factor=5)
