@@ -2,6 +2,7 @@ import backoff
 import json
 import logging
 from typing import Iterator, Callable, Dict, List, Tuple
+from datetime import datetime
 
 from klaviyo_api import KlaviyoAPI
 from openapi_client.exceptions import OpenApiException
@@ -93,11 +94,18 @@ class KlaviyoClient:
     def get_campaign_messages(self, campaign_id: str) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaign_campaign_messages, id=campaign_id)
 
+    def get_metric(self, metric_id: str):
+        try:
+            return self.client.Metrics.get_metric(metric_id)
+        except OpenApiException as api_exc:
+            error_message = self._process_error(api_exc)
+            raise KlaviyoClientException(error_message) from api_exc
+
     def query_metric_aggregates(self,
                                 metric_id: str,
                                 interval: str,
-                                from_timestamp: str,
-                                to_timestamp: str) -> Iterator[List[Dict]]:
+                                from_timestamp: int,
+                                to_timestamp: int) -> Iterator[List[Dict]]:
         metric_aggregate_query = {
             "data": {
                 "type": "metric-aggregate",
@@ -113,8 +121,8 @@ class KlaviyoClient:
                     "by": None,
                     "return_fields": None,
                     "filter": [
-                        f"greater-or-equal(timestamp,{from_timestamp})",
-                        f"less-than(timestamp,{to_timestamp})"
+                        f"greater-or-equal(datetime,{datetime.fromtimestamp(from_timestamp).date()}T00:00:00)",
+                        f"less-than(datetime,{datetime.fromtimestamp(to_timestamp).date()}T00:00:00)"
                         ],
                     "metric_id": metric_id,
                     "sort": None

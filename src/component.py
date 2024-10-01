@@ -206,8 +206,8 @@ class Component(ComponentBase):
         time_range_setting = params.get(KEY_TIME_RANGE_SETTINGS)
 
         if time_range_setting:
-            from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
-            to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
+            from_timestamp = self._parse_date(time_range_setting.get(KEY_DATE_FROM))
+            to_timestamp = self._parse_date(time_range_setting.get(KEY_DATE_TO))
         # Stay here bacause for backward compatibility
         else:
             from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
@@ -245,10 +245,13 @@ class Component(ComponentBase):
     def get_metric_aggregates(self) -> None:
         params = self.configuration.parameters
         metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
+
+        time_range_settings = params.get(KEY_TIME_RANGE_SETTINGS)
         interval = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL)
-        from_timestamp = metric_aggregates_settings.get(KEY_DATE_FROM)
-        to_timestamp = metric_aggregates_settings.get(KEY_DATE_TO)
+        from_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_FROM))
+        to_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_TO))
         ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
+
         for id in ids:
             self.fetch_and_write_object_data(
                 "metric_aggregates",
@@ -381,6 +384,16 @@ class Component(ComponentBase):
                 self.client.get_list(list_id)
             logging.info("Profile fetching parameters are valid")
 
+        # Validate if list ids for metric aggregates are valid
+        metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
+        metric_aggregates_ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
+        logging.info("Validating metric aggregates parametrs...")
+        for metric_id in metric_aggregates_ids:
+            try:
+                self.client.get_metric(metric_id)
+            except KlaviyoClientException as e:
+                raise UserException(f"Metric with ID {metric_id} not found.") from e
+        logging.info("Metric aggregates parametrs are valid")
         # sync action that is executed when configuration.json "action":"testConnection" parameter is present.
 
     @sync_action('validate_connection')
