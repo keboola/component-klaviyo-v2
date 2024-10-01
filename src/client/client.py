@@ -113,8 +113,8 @@ class KlaviyoClient:
                     "by": None,
                     "return_fields": None,
                     "filter": [
-                        f"greater-or-equal(datetime,{from_timestamp}T00:00:00)",
-                        f"less-than(datetime,{to_timestamp}T00:00:00)"
+                        f"greater-or-equal(timestamp,{from_timestamp})",
+                        f"less-than(timestamp,{to_timestamp})"
                         ],
                     "metric_id": metric_id,
                     "sort": None

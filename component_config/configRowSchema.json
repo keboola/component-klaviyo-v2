@@ -152,28 +152,24 @@
         }
       }
     },
-    "events_settings": {
-      "title": "Events - Additional Options",
+    "time_range_settings": {
+      "title": "Time range options",
       "type": "object",
       "propertyOrder": 50,
-      "options": {
-        "dependencies": {
-          "events_hidden": "true"
-        }
-      },
+      "description": "This setting applies to the following endpoints: Events, Metric Aggregates.",
       "properties": {
         "date_from": {
           "title": "Fetch Events From Date",
           "propertyOrder": 10,
           "type": "string",
-          "description": "Date from which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, yesterday, etc. You can also set this as last run, which will fetch data from the last run of the component.",
+          "description": "Date from which data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, yesterday, etc. You can also set this as last run, which will fetch data from the last run of the component.",
           "default": "last run"
         },
         "date_to": {
           "title": "Fetch Events To Date",
           "propertyOrder": 20,
           "type": "string",
-          "description": "Date to which event data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
+          "description": "Date to which data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
           "default": "now"
         }
       }
@@ -278,18 +274,6 @@
             }
           }
         },
-        "metric_aggregates_date_from": {
-          "title": "Aggregated date range from",
-          "propertyOrder": 20,
-          "type": "string",
-          "description": "The date from which aggregated metrics are downloaded. The date format is YYYY-MM-DD. The maximum date range is 1 year."
-        },
-        "metric_aggregates_date_to": {
-          "title": "Aggregated date range to",
-          "propertyOrder": 30,
-          "type": "string",
-          "description": "The date to which aggregated metrics are downloaded. The date format is YYYY-MM-DD. The maximum date range is 1 year."
-        },
         "metric_aggregates_interval": {
           "title": "Aggregate interval",
           "propertyOrder": 40,
@@ -332,16 +316,6 @@
       },
       "template": "{{catalogs_hidden}}"
     },
-    "events_hidden": {
-      "type": "string",
-      "watch": {
-        "events_hidden": "rootschema.objects.events"
-      },
-      "options": {
-        "hidden": true
-      },
-      "template": "{{events_hidden}}"
-    },
     "flows_hidden": {
       "type": "string",
       "watch": {
@@ -365,12 +339,12 @@
     "metric_aggregates_hidden": {
       "type": "string",
       "watch": {
-        "profiles_hidden": "rootschema.objects.metric_aggregates"
+        "metric_aggregates_hidden": "rootschema.objects.metric_aggregates"
       },
       "options": {
         "hidden": true
       },
-      "template": "{{profiles_hidden}}"
+      "template": "{{metric_aggregates_hidden}}"
     }
   }
 }

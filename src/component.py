@@ -19,6 +19,7 @@ KEY_API_TOKEN = "#api_token"
 
 KEY_OBJECTS = "objects"
 
+KEY_TIME_RANGE_SETTINGS = "time_range_settings"
 KEY_DATE_FROM = "date_from"
 KEY_DATE_TO = "date_to"
 
@@ -37,8 +38,6 @@ KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
 
 KEY_METRIC_AGGREGATES_SETTINGS = "metric_aggregates_settings"
 KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS = "metric_aggregates_ids"
-KEY_METRIC_AGGREGATES_SETTINGS_DATE_FROM = "metric_aggregates_date_from"
-KEY_METRIC_AGGREGATES_SETTINGS_DATE_TO = "metric_aggregates_date_to"
 KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL = "metric_aggregates_interval"
 
 KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
@@ -204,9 +203,16 @@ class Component(ComponentBase):
     def get_events(self) -> None:
         params = self.configuration.parameters
         event_settings = params.get(KEY_EVENTS_SETTINGS)
+        time_range_setting = params.get(KEY_TIME_RANGE_SETTINGS)
 
-        from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
-        to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
+        if time_range_setting:
+            from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
+            to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
+        # Stay here bacause for backward compatibility
+        else:
+            from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
+            to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
+
         self.fetch_and_write_object_data("event", self.client.get_events,
                                          from_timestamp_value=from_timestamp,
                                          to_timestamp_value=to_timestamp)
@@ -240,8 +246,8 @@ class Component(ComponentBase):
         params = self.configuration.parameters
         metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
         interval = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL)
-        from_timestamp = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_DATE_FROM)
-        to_timestamp = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_DATE_TO)
+        from_timestamp = metric_aggregates_settings.get(KEY_DATE_FROM)
+        to_timestamp = metric_aggregates_settings.get(KEY_DATE_TO)
         ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
         for id in ids:
             self.fetch_and_write_object_data(
@@ -334,15 +340,25 @@ class Component(ComponentBase):
         return dictionary
 
     def _validate_user_parameters(self) -> None:
-        # Validate Date From and Date for events, if events are to be downloaded
         params = self.configuration.parameters
         objects = params.get(KEY_OBJECTS)
+
+        # Old version of time range, kept for backward compatibility
+        # Validate Date From and Date for events, if events are to be downloaded
         event_settings = params.get(KEY_EVENTS_SETTINGS)
         if event_settings and objects.get("events"):
             logging.info("Validating Event parameters...")
             self._parse_date(event_settings.get(KEY_DATE_FROM))
             self._parse_date(event_settings.get(KEY_DATE_TO))
             logging.info("Event parameters are valid")
+
+        # Validate Date From and Date for time ranged endpoints
+        time_range_setting = params.get(KEY_TIME_RANGE_SETTINGS)
+        if (objects.get("events") or objects.get("metric_aggregates")) and time_range_setting:
+            logging.info("Validating Date range parameters...")
+            self._parse_date(time_range_setting.get(KEY_DATE_FROM))
+            self._parse_date(time_range_setting.get(KEY_DATE_TO))
+            logging.info("Date range parameters are valid")
 
         # Validate if segment ids for profile fetching are valid
         profile_settings = params.get(KEY_PROFILES_SETTINGS, {})
