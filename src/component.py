@@ -386,14 +386,15 @@ class Component(ComponentBase):
 
         # Validate if list ids for metric aggregates are valid
         metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
-        metric_aggregates_ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
-        logging.info("Validating metric aggregates parametrs...")
-        for metric_id in metric_aggregates_ids:
-            try:
-                self.client.get_metric(metric_id)
-            except KlaviyoClientException as e:
-                raise UserException(f"Metric with ID {metric_id} not found.") from e
-        logging.info("Metric aggregates parametrs are valid")
+        if metric_aggregates_settings and object.get("metric_aggregates"):
+            metric_aggregates_ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
+            logging.info("Validating metric aggregates parametrs...")
+            for metric_id in metric_aggregates_ids:
+                try:
+                    self.client.get_metric(metric_id)
+                except KlaviyoClientException as e:
+                    raise UserException(f"Metric with ID {metric_id} not found.") from e
+            logging.info("Metric aggregates parametrs are valid")
         # sync action that is executed when configuration.json "action":"testConnection" parameter is present.
 
     @sync_action('validate_connection')
