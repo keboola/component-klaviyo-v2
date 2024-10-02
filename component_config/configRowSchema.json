@@ -156,6 +156,15 @@
       "title": "Time range options",
       "type": "object",
       "propertyOrder": 50,
+      "options": {
+        "dependencies": {
+          "dummy_element": [
+            "false-true",
+            "true-false",
+            "true-true"
+          ]
+        }
+      },
       "description": "This setting applies to the following endpoints: Events, Metric Aggregates.",
       "properties": {
         "date_from": {
@@ -172,6 +181,18 @@
           "description": "Date to which data is downloaded. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, now, etc.",
           "default": "now"
         }
+      }
+    },
+    "dummy_element": {
+      "type": "string",
+      "description": "Helper dummy element to render time range options",
+      "template": "{{aggregates}}-{{events}}",
+      "watch": {
+        "aggregates": "objects.metric_aggregates",
+        "events": "objects.events"
+      },
+      "options": {
+        "hidden": true
       }
     },
     "profiles_settings": {
