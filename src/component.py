@@ -345,11 +345,13 @@ class Component(ComponentBase):
     def _validate_user_parameters(self) -> None:
         params = self.configuration.parameters
         objects = params.get(KEY_OBJECTS)
+        events = objects.get("events")
+        metric_aggregates = objects.get("metric_aggregates")
 
         # Old version of time range, kept for backward compatibility
         # Validate Date From and Date for events, if events are to be downloaded
         event_settings = params.get(KEY_EVENTS_SETTINGS)
-        if event_settings and objects.get("events"):
+        if event_settings and events:
             logging.info("Validating Event parameters...")
             self._parse_date(event_settings.get(KEY_DATE_FROM))
             self._parse_date(event_settings.get(KEY_DATE_TO))
@@ -357,7 +359,7 @@ class Component(ComponentBase):
 
         # Validate Date From and Date for time ranged endpoints
         time_range_setting = params.get(KEY_TIME_RANGE_SETTINGS)
-        if (objects.get("events") or objects.get("metric_aggregates")) and time_range_setting:
+        if (events or metric_aggregates) and time_range_setting:
             logging.info("Validating Date range parameters...")
             self._parse_date(time_range_setting.get(KEY_DATE_FROM))
             self._parse_date(time_range_setting.get(KEY_DATE_TO))
@@ -386,7 +388,7 @@ class Component(ComponentBase):
 
         # Validate if list ids for metric aggregates are valid
         metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
-        if metric_aggregates_settings and object.get("metric_aggregates"):
+        if metric_aggregates_settings and metric_aggregates:
             metric_aggregates_ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
             logging.info("Validating metric aggregates parametrs...")
             for metric_id in metric_aggregates_ids:

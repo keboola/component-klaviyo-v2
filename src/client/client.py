@@ -4,6 +4,8 @@ import logging
 from typing import Iterator, Callable, Dict, List, Tuple
 from datetime import datetime
 
+from keboola.component.exceptions import UserException
+
 from klaviyo_api import KlaviyoAPI
 from openapi_client.exceptions import OpenApiException
 from openapi_client.models import MetricAggregateQuery
@@ -136,23 +138,26 @@ class KlaviyoClient:
 
     def _normalize_aggregated_response(self, json_data: Dict, metric_id: str) -> Dict:
         transformed_data = []
-        dates = json_data["attributes"]["dates"]
-        counts = json_data["attributes"]["data"][0]["measurements"]["count"]
-        uniques = json_data["attributes"]["data"][0]["measurements"]["unique"]
-        sum_value = json_data["attributes"]["data"][0]["measurements"]["sum_value"]
-        for idx, date in enumerate(dates):
-            record = {
-                "type": "metric_aggregate",
-                "id": f"{date}_{metric_id}",
-                "attributes": {
-                    "metric_id": metric_id,
-                    "date": date,
-                    "count": counts[idx],
-                    "unique": uniques[idx],
-                    "sum_value": sum_value[idx]
+        try:
+            dates = json_data["attributes"]["dates"]
+            counts = json_data["attributes"]["data"][0]["measurements"]["count"]
+            uniques = json_data["attributes"]["data"][0]["measurements"]["unique"]
+            sum_value = json_data["attributes"]["data"][0]["measurements"]["sum_value"]
+            for idx, date in enumerate(dates):
+                record = {
+                    "type": "metric_aggregate",
+                    "id": f"{date}_{metric_id}",
+                    "attributes": {
+                        "metric_id": metric_id,
+                        "date": date,
+                        "count": counts[idx],
+                        "unique": uniques[idx],
+                        "sum_value": sum_value[idx]
+                    }
                 }
-            }
-            transformed_data.append(record)
+                transformed_data.append(record)
+        except (IndexError, TypeError) as err:
+            raise UserException(err) from err
 
         return transformed_data
 
