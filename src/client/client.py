@@ -156,7 +156,7 @@ class KlaviyoClient:
                     }
                 }
                 transformed_data.append(record)
-        except (IndexError, TypeError) as err:
+        except (IndexError, TypeError, AttributeError) as err:
             raise UserException(err) from err
 
         return transformed_data
