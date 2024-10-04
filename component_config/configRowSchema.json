@@ -34,7 +34,7 @@
           "title": "Events",
           "format": "checkbox",
           "type": "boolean",
-          "default": true,
+          "default": false,
           "options": {
             "grid_columns": 3
           }
@@ -70,7 +70,7 @@
           "title": "Profiles",
           "format": "checkbox",
           "type": "boolean",
-          "default": true,
+          "default": false,
           "options": {
             "grid_columns": 3
           }
