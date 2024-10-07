@@ -1,0 +1,39 @@
+{
+    "name": "metric_aggregates",
+    "description": "",
+    "primary_keys": [
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "description": "",
+        "base_type": "STRING"
+      },
+      {
+        "name": "metric_id",
+        "description": "",
+        "base_type": "STRING"
+      },
+      {
+        "name": "date",
+        "description": "",
+        "base_type": "STRING"
+      },
+      {
+        "name": "unique",
+        "description": "",
+        "base_type": "STRING"
+      },
+      {
+        "name": "sum_value",
+        "description": "",
+        "base_type": "STRING"
+      },
+      {
+        "name": "count",
+        "description": "",
+        "base_type": "STRING"
+      }
+    ]
+  }

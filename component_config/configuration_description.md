@@ -19,6 +19,7 @@ For more information follow [this guide on from Klaviyo](https://developers.klav
 - [Profiles](https://developers.klaviyo.com/en/reference/get_profiles)
 - [Metrics](https://developers.klaviyo.com/en/reference/get_metrics)
 - [Events](https://developers.klaviyo.com/en/reference/get_events)
+- [Metric aggergates](https://developers.klaviyo.com/en/reference/query_metric_aggregates)
 
 # Limitations
 

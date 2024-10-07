@@ -19,6 +19,7 @@ KEY_API_TOKEN = "#api_token"
 
 KEY_OBJECTS = "objects"
 
+KEY_TIME_RANGE_SETTINGS = "time_range_settings"
 KEY_DATE_FROM = "date_from"
 KEY_DATE_TO = "date_to"
 
@@ -35,13 +36,17 @@ KEY_PROFILES_SETTINGS_FETCH_PROFILES_MODE = "fetch_profiles_mode"
 KEY_PROFILES_SETTINGS_FETCH_BY_LIST = "fetch_profiles_by_list"
 KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
 
+KEY_METRIC_AGGREGATES_SETTINGS = "metric_aggregates_settings"
+KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS = "metric_aggregates_ids"
+KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL = "metric_aggregates_interval"
+
 KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
 REQUIRED_PARAMETERS = [KEY_API_TOKEN, KEY_OBJECTS]
 REQUIRED_IMAGE_PARS = []
 
 OBJECT_ENDPOINTS = ["campaigns", "flows", "templates", "catalogs", "events", "metrics",
-                    "lists", "segments", "profiles"]
+                    "lists", "segments", "profiles", "metric_aggregates"]
 
 # Ignore dateparser warnings regarding pytz
 warnings.filterwarnings(
@@ -64,7 +69,8 @@ class Component(ComponentBase):
             "segments": self.get_segments,
             "profiles": self.get_profiles,
             "flows": self.get_flows,
-            "templates": self.get_templates
+            "templates": self.get_templates,
+            "metric_aggregates": self.get_metric_aggregates
         }
         self.client = None
         self.result_writers = {}
@@ -197,9 +203,16 @@ class Component(ComponentBase):
     def get_events(self) -> None:
         params = self.configuration.parameters
         event_settings = params.get(KEY_EVENTS_SETTINGS)
+        time_range_setting = params.get(KEY_TIME_RANGE_SETTINGS)
 
-        from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
-        to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
+        if time_range_setting:
+            from_timestamp = self._parse_date(time_range_setting.get(KEY_DATE_FROM))
+            to_timestamp = self._parse_date(time_range_setting.get(KEY_DATE_TO))
+        # Stay here bacause for backward compatibility
+        else:
+            from_timestamp = self._parse_date(event_settings.get(KEY_DATE_FROM))
+            to_timestamp = self._parse_date(event_settings.get(KEY_DATE_TO))
+
         self.fetch_and_write_object_data("event", self.client.get_events,
                                          from_timestamp_value=from_timestamp,
                                          to_timestamp_value=to_timestamp)
@@ -228,6 +241,26 @@ class Component(ComponentBase):
 
     def get_templates(self) -> None:
         self.fetch_and_write_object_data("template", self.client.get_templates)
+
+    def get_metric_aggregates(self) -> None:
+        params = self.configuration.parameters
+        metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
+
+        time_range_settings = params.get(KEY_TIME_RANGE_SETTINGS)
+        interval = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL)
+        from_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_FROM))
+        to_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_TO))
+        ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
+
+        for id in ids:
+            self.fetch_and_write_object_data(
+                "metric_aggregates",
+                self.client.query_metric_aggregates,
+                metric_id=id,
+                interval=interval,
+                from_timestamp=from_timestamp,
+                to_timestamp=to_timestamp
+                )
 
     def _parse_date(self, date_to_parse: str) -> int:
         if date_to_parse.lower() in {"last", "lastrun", "last run"}:
@@ -310,15 +343,27 @@ class Component(ComponentBase):
         return dictionary
 
     def _validate_user_parameters(self) -> None:
-        # Validate Date From and Date for events, if events are to be downloaded
         params = self.configuration.parameters
         objects = params.get(KEY_OBJECTS)
+        events = objects.get("events")
+        metric_aggregates = objects.get("metric_aggregates")
+
+        # Old version of time range, kept for backward compatibility
+        # Validate Date From and Date for events, if events are to be downloaded
         event_settings = params.get(KEY_EVENTS_SETTINGS)
-        if event_settings and objects.get("events"):
+        if event_settings and events:
             logging.info("Validating Event parameters...")
             self._parse_date(event_settings.get(KEY_DATE_FROM))
             self._parse_date(event_settings.get(KEY_DATE_TO))
             logging.info("Event parameters are valid")
+
+        # Validate Date From and Date for time ranged endpoints
+        time_range_setting = params.get(KEY_TIME_RANGE_SETTINGS)
+        if (events or metric_aggregates) and time_range_setting:
+            logging.info("Validating Date range parameters...")
+            self._parse_date(time_range_setting.get(KEY_DATE_FROM))
+            self._parse_date(time_range_setting.get(KEY_DATE_TO))
+            logging.info("Date range parameters are valid")
 
         # Validate if segment ids for profile fetching are valid
         profile_settings = params.get(KEY_PROFILES_SETTINGS, {})
@@ -341,6 +386,17 @@ class Component(ComponentBase):
                 self.client.get_list(list_id)
             logging.info("Profile fetching parameters are valid")
 
+        # Validate if list ids for metric aggregates are valid
+        metric_aggregates_settings = params.get(KEY_METRIC_AGGREGATES_SETTINGS)
+        if metric_aggregates_settings and metric_aggregates:
+            metric_aggregates_ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
+            logging.info("Validating metric aggregates parametrs...")
+            for metric_id in metric_aggregates_ids:
+                try:
+                    self.client.get_metric(metric_id)
+                except KlaviyoClientException as e:
+                    raise UserException(f"Metric with ID {metric_id} not found.") from e
+            logging.info("Metric aggregates parametrs are valid")
         # sync action that is executed when configuration.json "action":"testConnection" parameter is present.
 
     @sync_action('validate_connection')
@@ -370,7 +426,7 @@ class Component(ComponentBase):
         return result
 
     @sync_action("loadListIds")
-    def load_list_ids(self) -> [SelectElement]:
+    def load_list_ids(self) -> List[SelectElement]:
         self._init_client()
         try:
             list_ids = self.client.get_list_ids()
@@ -380,12 +436,23 @@ class Component(ComponentBase):
         return r
 
     @sync_action("loadSegmentIds")
-    def load_segment_ids(self) -> [SelectElement]:
+    def load_segment_ids(self) -> List[SelectElement]:
         self._init_client()
         try:
             segment_ids = self.client.get_segment_ids()
             r = [SelectElement(value=segment_id.get("id"), label=json.dumps(segment_id.get("name")))
                  for segment_id in segment_ids]
+        except Exception as e:
+            raise UserException(e) from e
+        return r
+
+    @sync_action("loadMetricIds")
+    def load_metric_ids(self) -> List[SelectElement]:
+        self._init_client()
+        try:
+            metric_ids = self.client.get_metric_ids()
+            r = [SelectElement(value=metric_id.get("id"), label=json.dumps(metric_id.get("name")))
+                 for metric_id in metric_ids]
         except Exception as e:
             raise UserException(e) from e
         return r
