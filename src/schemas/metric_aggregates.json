@@ -34,6 +34,11 @@
         "name": "count",
         "description": "",
         "base_type": "STRING"
+      },
+      {
+        "name": "dimensions",
+        "description": "",
+        "base_type": "STRING"
       }
     ]
   }

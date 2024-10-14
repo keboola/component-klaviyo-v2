@@ -107,7 +107,8 @@ class KlaviyoClient:
                                 metric_id: str,
                                 interval: str,
                                 from_timestamp: int,
-                                to_timestamp: int) -> Iterator[List[Dict]]:
+                                to_timestamp: int,
+                                by: list) -> Iterator[List[Dict]]:
         metric_aggregate_query = {
             "data": {
                 "type": "metric-aggregate",
@@ -120,7 +121,7 @@ class KlaviyoClient:
                         "unique",
                         "sum_value"
                         ],
-                    "by": None,
+                    "by": by,
                     "return_fields": None,
                     "filter": [
                         f"greater-or-equal(datetime,{datetime.fromtimestamp(from_timestamp).date()}T00:00:00)",
@@ -134,7 +135,10 @@ class KlaviyoClient:
         for page in self._paginate_cursor_endpoint(
             self.client.Metrics.query_metric_aggregates,
                 metric_aggregate_query=MetricAggregateQuery.from_dict(metric_aggregate_query)):
-            yield self._normalize_aggregated_response(page, metric_id)
+            if len(by) > 0:
+                yield self._normalize_aggregated_response_partitioned(page, metric_id)
+            else:
+                yield self._normalize_aggregated_response(page, metric_id)
 
     def _normalize_aggregated_response(self, json_data: Dict, metric_id: str) -> Dict:
         transformed_data = []
@@ -152,7 +156,8 @@ class KlaviyoClient:
                         "date": date,
                         "count": counts[idx],
                         "unique": uniques[idx],
-                        "sum_value": sum_value[idx]
+                        "sum_value": sum_value[idx],
+                        "dimensions": []
                     }
                 }
                 transformed_data.append(record)
@@ -160,6 +165,43 @@ class KlaviyoClient:
             raise UserException(err) from err
 
         return transformed_data
+
+    def _normalize_aggregated_response_partitioned(self, json_data: Dict, metric_id: str) -> Dict:
+        transformed_data = []
+        try:
+            dates = json_data["attributes"]["dates"]
+            data = json_data["attributes"]["data"]
+            for partitioned_data in data:
+                counts = partitioned_data["measurements"]["count"]
+                uniques = partitioned_data["measurements"]["unique"]
+                sum_value = partitioned_data["measurements"]["sum_value"]
+                dimensions = partitioned_data["dimensions"]
+                for idx, date in enumerate(dates):
+                    record = {
+                        "type": "metric_aggregate",
+                        "id": f"{date}_{metric_id}{self._join_list_to_string(dimensions)}",
+                        "attributes": {
+                            "metric_id": metric_id,
+                            "date": date,
+                            "count": counts[idx],
+                            "unique": uniques[idx],
+                            "sum_value": sum_value[idx],
+                            "dimensions": dimensions
+                        }
+                    }
+                    transformed_data.append(record)
+        except (IndexError, TypeError, AttributeError) as err:
+            raise UserException(err) from err
+
+        return transformed_data
+
+    def _join_list_to_string(self, join_list: list):
+        if len(join_list) < 1:
+            return ""
+        joined_list = ""
+        for item in join_list:
+            joined_list += f"_{item}"
+        return joined_list
 
     def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Iterator[List[Dict]]:
 
