@@ -297,7 +297,7 @@
         },
         "metric_aggregates_interval": {
           "title": "Aggregate interval",
-          "propertyOrder": 40,
+          "propertyOrder": 20,
           "type": "string",
           "enum": [
             "hour",
@@ -306,12 +306,22 @@
             "month"
           ],
           "default": "day"
+        },
+        "metric_aggregates_partitioning_by": {
+          "title": "Partitioning by",
+          "description": "Optional attribute(s) used for partitioning by the aggregation function",
+          "propertyOrder": 30,
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
     "store_nested_attributes": {
       "title": "Store Nested Attributes",
-      "propertyOrder": 30,
+      "propertyOrder": 20,
       "format": "checkbox",
       "type": "boolean",
       "description": "You can use this options if you are fetching deeply nested attributes and you are encountering Output mapping errors due to 64 characters limit for columns.",

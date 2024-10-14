@@ -39,6 +39,7 @@ KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
 KEY_METRIC_AGGREGATES_SETTINGS = "metric_aggregates_settings"
 KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS = "metric_aggregates_ids"
 KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL = "metric_aggregates_interval"
+KEY_METRIC_AGGERGATES_SETTING_BY = 'metric_aggregates_partitioning_by'
 
 KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
@@ -251,6 +252,7 @@ class Component(ComponentBase):
         from_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_FROM))
         to_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_TO))
         ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
+        by = metric_aggregates_settings.get(KEY_METRIC_AGGERGATES_SETTING_BY)
 
         for id in ids:
             self.fetch_and_write_object_data(
@@ -259,7 +261,8 @@ class Component(ComponentBase):
                 metric_id=id,
                 interval=interval,
                 from_timestamp=from_timestamp,
-                to_timestamp=to_timestamp
+                to_timestamp=to_timestamp,
+                by=by
                 )
 
     def _parse_date(self, date_to_parse: str) -> int:
