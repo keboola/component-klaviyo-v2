@@ -168,13 +168,13 @@ class KlaviyoClient:
 
     def _normalize_aggregated_response_partitioned(self, json_data: Dict, metric_id: str) -> Dict:
         transformed_data = []
-        logging.info(f"{json_data}")
+        # logging.info(f"{json_data}")
         dates = json_data["attributes"]["dates"]
         data = json_data["attributes"]["data"]
         for partitioned_data in data:
-            counts = partitioned_data["measurements"]["count"]
-            uniques = partitioned_data["measurements"]["unique"]
-            sum_value = partitioned_data["measurements"]["sum_value"]
+            # counts = partitioned_data["measurements"]["count"]
+            # uniques = partitioned_data["measurements"]["unique"]
+            # sum_value = partitioned_data["measurements"]["sum_value"]
             dimensions = partitioned_data["dimensions"]
             for idx, date in enumerate(dates):
                 record = {
@@ -183,9 +183,9 @@ class KlaviyoClient:
                     "attributes": {
                         "metric_id": metric_id,
                         "date": date,
-                        "count": counts[idx],
-                        "unique": uniques[idx],
-                        "sum_value": sum_value[idx],
+                        "count": None,
+                        "unique": None,
+                        "sum_value": None,
                         "dimensions": dimensions
                     }
                 }
