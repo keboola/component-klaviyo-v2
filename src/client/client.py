@@ -168,30 +168,28 @@ class KlaviyoClient:
 
     def _normalize_aggregated_response_partitioned(self, json_data: Dict, metric_id: str) -> Dict:
         transformed_data = []
-        try:
-            dates = json_data["attributes"]["dates"]
-            data = json_data["attributes"]["data"]
-            for partitioned_data in data:
-                counts = partitioned_data["measurements"]["count"]
-                uniques = partitioned_data["measurements"]["unique"]
-                sum_value = partitioned_data["measurements"]["sum_value"]
-                dimensions = partitioned_data["dimensions"]
-                for idx, date in enumerate(dates):
-                    record = {
-                        "type": "metric_aggregate",
-                        "id": f"{date}_{metric_id}{self._join_list_to_string(dimensions)}",
-                        "attributes": {
-                            "metric_id": metric_id,
-                            "date": date,
-                            "count": counts[idx],
-                            "unique": uniques[idx],
-                            "sum_value": sum_value[idx],
-                            "dimensions": dimensions
-                        }
+        logging.info(f"{json_data}")
+        dates = json_data["attributes"]["dates"]
+        data = json_data["attributes"]["data"]
+        for partitioned_data in data:
+            counts = partitioned_data["measurements"]["count"]
+            uniques = partitioned_data["measurements"]["unique"]
+            sum_value = partitioned_data["measurements"]["sum_value"]
+            dimensions = partitioned_data["dimensions"]
+            for idx, date in enumerate(dates):
+                record = {
+                    "type": "metric_aggregate",
+                    "id": f"{date}_{metric_id}{self._join_list_to_string(dimensions)}",
+                    "attributes": {
+                        "metric_id": metric_id,
+                        "date": date,
+                        "count": counts[idx],
+                        "unique": uniques[idx],
+                        "sum_value": sum_value[idx],
+                        "dimensions": dimensions
                     }
-                    transformed_data.append(record)
-        except (IndexError, TypeError, AttributeError) as err:
-            raise UserException(err) from err
+                }
+                transformed_data.append(record)
 
         return transformed_data
 
