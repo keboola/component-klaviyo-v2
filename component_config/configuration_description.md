@@ -25,3 +25,9 @@ For more information follow [this guide on from Klaviyo](https://developers.klav
 
 When fetching profiles the maximum amount of profiles is 25,000 due to fetching times. If you wish to fetch more, 
 it is recommended to create multiple segments or lists and download them in multiple runs of the component.
+
+## Metric aggregates limtation
+
+When using the by parameter to aggregate data over a specified period, if no data is available for the selected time range, the endpoint returns a single aggregated value instead of a list of values for each aggregated period. In such cases, the returned values are supplemented with null values, which can result in empty columns in the output of the consuming component. This occurs because the endpoint does not return the expected data points for each aggregation period.
+
+This behavior should be considered when processing the results, as the absence of data for specific periods may affect the integrity of the final output.

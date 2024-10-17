@@ -135,38 +135,15 @@ class KlaviyoClient:
         for page in self._paginate_cursor_endpoint(
             self.client.Metrics.query_metric_aggregates,
                 metric_aggregate_query=MetricAggregateQuery.from_dict(metric_aggregate_query)):
-            if len(by) > 0:
-                yield self._normalize_aggregated_response_partitioned(page, metric_id)
-            else:
-                yield self._normalize_aggregated_response(page, metric_id)
+            yield self._normalize_aggregated_response(page, metric_id)
 
     def _normalize_aggregated_response(self, json_data: Dict, metric_id: str) -> Dict:
-        transformed_data = []
-        try:
-            dates = json_data["attributes"]["dates"]
-            counts = json_data["attributes"]["data"][0]["measurements"]["count"]
-            uniques = json_data["attributes"]["data"][0]["measurements"]["unique"]
-            sum_value = json_data["attributes"]["data"][0]["measurements"]["sum_value"]
-            for idx, date in enumerate(dates):
-                record = {
-                    "type": "metric_aggregate",
-                    "id": f"{date}_{metric_id}",
-                    "attributes": {
-                        "metric_id": metric_id,
-                        "date": date,
-                        "count": counts[idx],
-                        "unique": uniques[idx],
-                        "sum_value": sum_value[idx],
-                        "dimensions": []
-                    }
-                }
-                transformed_data.append(record)
-        except (IndexError, TypeError, AttributeError) as err:
-            raise UserException(err) from err
+        """
+        This method normalizes the response data from the Query Metric Aggregates endpoint,
+        transforming it into a structure compatible with the default parser.
+        """
 
-        return transformed_data
-
-    def _normalize_aggregated_response_partitioned(self, json_data: Dict, metric_id: str) -> Dict:
+        json_data = self._repair_metric_aggregates_response(json_data)
         transformed_data = []
         try:
             dates = json_data["attributes"]["dates"]
@@ -195,7 +172,26 @@ class KlaviyoClient:
 
         return transformed_data
 
-    def _join_list_to_string(self, join_list: list):
+    def _repair_metric_aggregates_response(self, json_data: Dict) -> Dict:
+        """
+        Handles cases where the query metric aggregates response has only a single zero instead of all zeros
+        when using the "by" parameter, replacing missing data columns with None.
+        """
+
+        dates = json_data["attributes"]["dates"]
+
+        for item in json_data["attributes"]["data"]:
+            measurements = item["measurements"]
+            keys_to_check = ["count", "unique", "sum_value"]
+
+            for key in keys_to_check:
+                if key in measurements:
+                    if len(measurements[key]) != len(dates):
+                        measurements[key] = [None] * len(dates)
+
+        return json_data
+
+    def _join_list_to_string(self, join_list: list) -> str:
         if len(join_list) < 1:
             return ""
         joined_list = ""
