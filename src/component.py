@@ -136,11 +136,11 @@ class Component(ComponentBase):
     def _add_columns_from_state_to_table_definition(self, object_name: str,
                                                     table_definition: TableDefinition) -> TableDefinition:
         if object_name in self.state:
-            all_columns = table_definition.columns
+            all_columns = table_definition.column_names
             for column in self.state.get(object_name):
                 if column not in all_columns:
                     all_columns.append(column)
-            table_definition.columns = all_columns
+            table_definition.schema = all_columns
         return table_definition
 
     def get_metrics(self) -> None:
@@ -282,7 +282,7 @@ class Component(ComponentBase):
             table_schema = self.get_table_schema_by_name(object_name)
             table_definition = self.create_out_table_definition_from_schema(table_schema, incremental=True)
             table_definition = self._add_columns_from_state_to_table_definition(object_name, table_definition)
-            writer = ElasticDictWriter(table_definition.full_path, table_definition.columns)
+            writer = ElasticDictWriter(table_definition.full_path, table_definition.column_names)
             self.result_writers[object_name] = {"table_definition": table_definition, "writer": writer}
 
     def _get_result_writer(self, object_name: str) -> ElasticDictWriter:
@@ -298,9 +298,9 @@ class Component(ComponentBase):
             writer_columns = copy.deepcopy(writer.fieldnames)
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
 
-            deduped_columns = table_definition.columns.copy()
+            deduped_columns = table_definition.column_names.copy()
             normalized_headers = self._normalize_headers(deduped_columns)
-            table_definition.columns = normalized_headers
+            table_definition.schema = normalized_headers
 
             self.write_manifest(table_definition)
 
@@ -336,7 +336,7 @@ class Component(ComponentBase):
                     table_definition.table_metadata.column_metadata, column,
                     column_name)
             final_columns.append(column_name)
-        table_definition.columns = final_columns
+        table_definition.schema = final_columns
         return table_definition
 
     @staticmethod
