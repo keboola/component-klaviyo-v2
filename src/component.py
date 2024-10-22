@@ -289,9 +289,13 @@ class Component(ComponentBase):
         return self.result_writers.get(object_name).get("writer")
 
     def _close_all_result_writers(self) -> None:
-        logging.info("START function _close_all_result_writers")
+        res_writers = ""
+        for i in self.result_writers:
+            x = self.result_writers.get(i).get("table_definition")
+            res_writers += x.name
+            res_writers += "-"
+        logging.info(f"Res writers: {res_writers}")
         for object_name in self.result_writers:
-            logging.info(f"Iterated item object_name: {object_name}")
             writer = self._get_result_writer(object_name)
             table_definition = self.result_writers.get(object_name).get("table_definition")
             table_definition = self._add_missing_metadata(table_definition)
@@ -305,14 +309,12 @@ class Component(ComponentBase):
             normalized_headers = self._normalize_headers(deduped_columns)
             table_definition.schema = normalized_headers
 
-            logging.info(f"Table_definiton.schema after function _close_all_result_writers: {table_definition.schema}")
             self.write_manifest(table_definition)
-        logging.info("END function _close_all_result_writers")
 
     def _add_missing_metadata(self, table_definiton: TableDefinition) -> TableDefinition:
-        logging.info("START function _add_missing_metadata")
-        logging.info(f"Column_names: {table_definiton.column_names}")
-        logging.info(f"Column metadata BEFORE add missing: {table_definiton.table_metadata.column_metadata}")
+        logging.info(f"Adding missing for {table_definiton.name} - \
+                     {table_definiton.columns} - {table_definiton.column_names}")
+        logging.info(f"{table_definiton.table_metadata.column_metadata}")
         for column in table_definiton.column_names:
             if column not in table_definiton.table_metadata.column_metadata.keys():
                 table_definiton.table_metadata.column_metadata[column] = {
@@ -320,8 +322,6 @@ class Component(ComponentBase):
                     'KBC.datatype.basetype': 'STRING',
                     'KBC.datatype.nullable': True}
                 logging.warning(f"Creating dummy metadata for column {column}")
-        logging.info(f"Column metadata AFTER add missing: {table_definiton.table_metadata.column_metadata}")
-        logging.info("END function _add_missing_metadata")
         return table_definiton
 
     @staticmethod
@@ -483,6 +483,12 @@ class Component(ComponentBase):
 
 if __name__ == "__main__":
     try:
+        import os
+        a1 = os.environ.get('KBC_STACKID')
+        a2 = os.environ.get('KBC_DATA_TYPE_SUPPORT')
+        logging.info(f"{a1} - {a2}")
+        # os.environ['KBC_DATA_TYPE_SUPPORT'] = 'none'
+        # os.environ['KBC_STACKID'] = "connection.keboola.com"
         comp = Component()
         # this triggers the run method by default and is controlled by the configuration.action parameter
         comp.execute_action()
