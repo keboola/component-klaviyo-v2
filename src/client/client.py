@@ -163,7 +163,7 @@ class KlaviyoClient:
                             "count": counts[idx],
                             "unique": uniques[idx],
                             "sum_value": sum_value[idx],
-                            "dimensions": dimensions
+                            "dimensions": self._fill_empty_dimension(dimensions)
                         }
                     }
                     transformed_data.append(record)
@@ -171,6 +171,14 @@ class KlaviyoClient:
             raise UserException(err) from err
 
         return transformed_data
+
+    def _fill_empty_dimension(self, dimensions: list) -> List[str]:
+        filled_dimensions = []
+        if len(dimensions) == 0:
+            filled_dimensions.append('NO DIMENSIONS SELECTED')
+        else:
+            filled_dimensions = ['DIMENSION NOT AVAILABLE' if dim == "" else dim for dim in dimensions]
+        return filled_dimensions
 
     def _repair_metric_aggregates_response(self, json_data: Dict) -> Dict:
         """
@@ -196,7 +204,8 @@ class KlaviyoClient:
             return ""
         joined_list = ""
         for item in join_list:
-            joined_list += f"_{item}"
+            if item != "":
+                joined_list += f"_{item}"
         return joined_list
 
     def _paginate_cursor_endpoint(self, endpoint_func: Callable, **kwargs) -> Iterator[List[Dict]]:

@@ -306,6 +306,10 @@ class Component(ComponentBase):
             self.write_manifest(table_definition)
 
     def _add_missing_metadata(self, table_definiton: TableDefinition) -> TableDefinition:
+        """
+        This method is used to add dummy metadata to a column in cases where the metadata
+        is missing from the table definition. This can occur in some cases when native types are enabled.
+        """
         for column in table_definiton.column_names:
             if column not in table_definiton.table_metadata.column_metadata.keys():
                 table_definiton.table_metadata.column_metadata[column] = {
