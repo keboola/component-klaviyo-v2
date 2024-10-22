@@ -302,7 +302,6 @@ class Component(ComponentBase):
         for object_name in self.result_writers:
             writer = self._get_result_writer(object_name)
             table_definition = self.result_writers.get(object_name).get("table_definition")
-            table_definition = self._add_missing_metadata(table_definition)
             writer.close()
             self.new_state[object_name] = copy.deepcopy(writer.fieldnames)
 
@@ -310,6 +309,7 @@ class Component(ComponentBase):
             writer_columns = copy.deepcopy(writer.fieldnames)
             logging.info(f"2 {table_definition.column_names}")
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
+            table_definition = self._add_missing_metadata(table_definition)
             logging.info(f"3 {table_definition.column_names}")
 
             deduped_columns = table_definition.column_names.copy()
@@ -491,6 +491,7 @@ class Component(ComponentBase):
 
 if __name__ == "__main__":
     try:
+        # import os
         # os.environ['KBC_DATA_TYPE_SUPPORT'] = 'none'
         # os.environ['KBC_STACKID'] = "connection.keboola.com"
         comp = Component()
