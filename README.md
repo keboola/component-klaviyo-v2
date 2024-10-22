@@ -53,7 +53,7 @@ Configuration
 -------------
 
 - Endpoints (objects) - [REQ] Key value pair of Klaviyo objects and a boolean value to signify whether or not to extract them
-  - Campaigns (campaigns)
+ - Campaigns (campaigns)
   - Catalog Items (catalogs)
   - Events (events)
   - Metrics (metrics)
@@ -164,17 +164,20 @@ No partitioning selected
 | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ |
 |2024-09-01T00:00:00+00:00_SUCEUS|SUCEUS|2024-09-01T00:00:00+00:00|10.0|5.0|0.0|['NO DIMENSIONS SELECTED']|
 
+
 One existing partitioning selected
 
 | id | metric_id | date  | unique  | sum_value  | count   | dimensions   | 
 | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ |
 |2024-09-01T00:00:00+00:00_SUCEUS|SUCEUS|2024-09-01T00:00:00+00:00|10.0|5.0|0.0|['Internal Klaviyo - Test Campaign Name']|
 
+
 One existing partitioning selected and two missing selected
 
 | id | metric_id | date  | unique  | sum_value  | count   | dimensions   | 
 | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ |
 |2024-09-01T00:00:00+00:00_SUCEUS|SUCEUS|2024-09-01T00:00:00+00:00|10.0|5.0|0.0|['Internal Klaviyo - Test Campaign Name', 'DIMENSION NOT AVAILABLE', 'DIMENSION NOT AVAILABLE']|
+
 
 Development
 -----------
