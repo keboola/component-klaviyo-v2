@@ -81,10 +81,6 @@ class Component(ComponentBase):
         super().__init__()
 
     def run(self):
-        import os
-        a1 = os.environ.get('KBC_STACKID')
-        a2 = os.environ.get('KBC_DATA_TYPE_SUPPORT')
-        logging.info(f"{a1} - {a2}")
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
 
@@ -293,36 +289,23 @@ class Component(ComponentBase):
         return self.result_writers.get(object_name).get("writer")
 
     def _close_all_result_writers(self) -> None:
-        res_writers = ""
-        for i in self.result_writers:
-            x = self.result_writers.get(i).get("table_definition")
-            res_writers += x.name
-            res_writers += "-"
-        logging.info(f"Res writers: {res_writers}")
         for object_name in self.result_writers:
             writer = self._get_result_writer(object_name)
             table_definition = self.result_writers.get(object_name).get("table_definition")
             writer.close()
             self.new_state[object_name] = copy.deepcopy(writer.fieldnames)
 
-            logging.info(f"1 {table_definition.column_names}")
             writer_columns = copy.deepcopy(writer.fieldnames)
-            logging.info(f"2 {table_definition.column_names}")
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
             table_definition = self._add_missing_metadata(table_definition)
-            logging.info(f"3 {table_definition.column_names}")
 
             deduped_columns = table_definition.column_names.copy()
             normalized_headers = self._normalize_headers(deduped_columns)
-            logging.info(f"4 {normalized_headers}")
             table_definition.schema = normalized_headers
 
             self.write_manifest(table_definition)
 
     def _add_missing_metadata(self, table_definiton: TableDefinition) -> TableDefinition:
-        logging.info(f"Adding missing for {table_definiton.name} - \
-                     {table_definiton.columns} - {table_definiton.column_names}")
-        logging.info(f"{table_definiton.table_metadata.column_metadata}")
         for column in table_definiton.column_names:
             if column not in table_definiton.table_metadata.column_metadata.keys():
                 table_definiton.table_metadata.column_metadata[column] = {
@@ -491,9 +474,6 @@ class Component(ComponentBase):
 
 if __name__ == "__main__":
     try:
-        # import os
-        # os.environ['KBC_DATA_TYPE_SUPPORT'] = 'none'
-        # os.environ['KBC_STACKID'] = "connection.keboola.com"
         comp = Component()
         # this triggers the run method by default and is controlled by the configuration.action parameter
         comp.execute_action()
