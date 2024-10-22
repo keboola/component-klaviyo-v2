@@ -292,6 +292,7 @@ class Component(ComponentBase):
         for object_name in self.result_writers:
             writer = self._get_result_writer(object_name)
             table_definition = self.result_writers.get(object_name).get("table_definition")
+            table_definition = self._add_missing_metadata(table_definition)
             writer.close()
             self.new_state[object_name] = copy.deepcopy(writer.fieldnames)
 
@@ -303,6 +304,16 @@ class Component(ComponentBase):
             table_definition.schema = normalized_headers
 
             self.write_manifest(table_definition)
+
+    def _add_missing_metadata(self, table_definiton: TableDefinition) -> TableDefinition:
+        for column in table_definiton.column_names:
+            if column not in table_definiton.table_metadata.column_metadata.keys():
+                table_definiton.table_metadata.column_metadata[column] = {
+                    'KBC.description': '',
+                    'KBC.datatype.basetype': 'STRING',
+                    'KBC.datatype.nullable': True}
+                logging.warning(f"Creating dummy metadata for column {column}")
+        return table_definiton
 
     @staticmethod
     def _normalize_headers(columns: List[str]) -> List[str]:
