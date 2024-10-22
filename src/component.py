@@ -306,11 +306,15 @@ class Component(ComponentBase):
             writer.close()
             self.new_state[object_name] = copy.deepcopy(writer.fieldnames)
 
+            logging.info(f"1 {table_definition.column_names}")
             writer_columns = copy.deepcopy(writer.fieldnames)
+            logging.info(f"2 {table_definition.column_names}")
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
+            logging.info(f"3 {table_definition.column_names}")
 
             deduped_columns = table_definition.column_names.copy()
             normalized_headers = self._normalize_headers(deduped_columns)
+            logging.info(f"4 {normalized_headers}")
             table_definition.schema = normalized_headers
 
             self.write_manifest(table_definition)
