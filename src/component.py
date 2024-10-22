@@ -81,6 +81,10 @@ class Component(ComponentBase):
         super().__init__()
 
     def run(self):
+        import os
+        a1 = os.environ.get('KBC_STACKID')
+        a2 = os.environ.get('KBC_DATA_TYPE_SUPPORT')
+        logging.info(f"{a1} - {a2}")
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
 
@@ -483,10 +487,6 @@ class Component(ComponentBase):
 
 if __name__ == "__main__":
     try:
-        import os
-        a1 = os.environ.get('KBC_STACKID')
-        a2 = os.environ.get('KBC_DATA_TYPE_SUPPORT')
-        logging.info(f"{a1} - {a2}")
         # os.environ['KBC_DATA_TYPE_SUPPORT'] = 'none'
         # os.environ['KBC_STACKID'] = "connection.keboola.com"
         comp = Component()
