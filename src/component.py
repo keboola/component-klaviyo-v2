@@ -39,7 +39,7 @@ KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
 KEY_METRIC_AGGREGATES_SETTINGS = "metric_aggregates_settings"
 KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS = "metric_aggregates_ids"
 KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL = "metric_aggregates_interval"
-KEY_METRIC_AGGERGATES_SETTING_BY = 'metric_aggregates_partitioning_by'
+KEY_METRIC_AGGREGATES_SETTING_BY = 'metric_aggregates_partitioning_by'
 
 KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
@@ -252,7 +252,7 @@ class Component(ComponentBase):
         from_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_FROM))
         to_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_TO))
         ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
-        by = metric_aggregates_settings.get(KEY_METRIC_AGGERGATES_SETTING_BY)
+        by = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTING_BY)
 
         for id in ids:
             self.fetch_and_write_object_data(
@@ -305,19 +305,20 @@ class Component(ComponentBase):
 
             self.write_manifest(table_definition)
 
-    def _add_missing_metadata(self, table_definiton: TableDefinition) -> TableDefinition:
+    @staticmethod
+    def _add_missing_metadata(table_definition: TableDefinition) -> TableDefinition:
         """
         This method is used to add dummy metadata to a column in cases where the metadata
-        is missing from the table definition. This can occur in some cases when native types are enabled.
+        is missing from the table definition. This can occur in some cases when old native types are enabled.
         """
-        for column in table_definiton.column_names:
-            if column not in table_definiton.table_metadata.column_metadata.keys():
-                table_definiton.table_metadata.column_metadata[column] = {
+        for column in table_definition.column_names:
+            if column not in table_definition.table_metadata.column_metadata.keys():
+                table_definition.table_metadata.column_metadata[column] = {
                     'KBC.description': '',
                     'KBC.datatype.basetype': 'STRING',
                     'KBC.datatype.nullable': True}
-                logging.debug(f"Creating dummy metadata for column {column}")
-        return table_definiton
+                logging.info(f"Creating dummy metadata for column {column}")
+        return table_definition
 
     @staticmethod
     def _normalize_headers(columns: List[str]) -> List[str]:
