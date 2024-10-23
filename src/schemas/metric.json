@@ -44,6 +44,11 @@
       "name": "integration_category",
       "description": "",
       "base_type": "STRING"
+    },
+    {
+      "name": "integration_key",
+      "description": "",
+      "base_type": "STRING"
     }
   ]
 }

@@ -316,7 +316,7 @@ class Component(ComponentBase):
                     'KBC.description': '',
                     'KBC.datatype.basetype': 'STRING',
                     'KBC.datatype.nullable': True}
-                logging.warning(f"Creating dummy metadata for column {column}")
+                logging.debug(f"Creating dummy metadata for column {column}")
         return table_definiton
 
     @staticmethod
