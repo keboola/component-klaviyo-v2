@@ -39,7 +39,7 @@ KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT = "fetch_profiles_by_segment"
 KEY_METRIC_AGGREGATES_SETTINGS = "metric_aggregates_settings"
 KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS = "metric_aggregates_ids"
 KEY_METRIC_AGGREGATES_SETTINGS_INTERVAL = "metric_aggregates_interval"
-KEY_METRIC_AGGERGATES_SETTING_BY = 'metric_aggregates_partitioning_by'
+KEY_METRIC_AGGREGATES_SETTING_BY = 'metric_aggregates_partitioning_by'
 
 KEY_STORE_NESTED_ATTRIBUTES = "store_nested_attributes"
 
@@ -136,11 +136,11 @@ class Component(ComponentBase):
     def _add_columns_from_state_to_table_definition(self, object_name: str,
                                                     table_definition: TableDefinition) -> TableDefinition:
         if object_name in self.state:
-            all_columns = table_definition.columns
+            all_columns = table_definition.column_names
             for column in self.state.get(object_name):
                 if column not in all_columns:
                     all_columns.append(column)
-            table_definition.columns = all_columns
+            table_definition.schema = all_columns
         return table_definition
 
     def get_metrics(self) -> None:
@@ -252,7 +252,7 @@ class Component(ComponentBase):
         from_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_FROM))
         to_timestamp = self._parse_date(time_range_settings.get(KEY_DATE_TO))
         ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
-        by = metric_aggregates_settings.get(KEY_METRIC_AGGERGATES_SETTING_BY)
+        by = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTING_BY)
 
         for id in ids:
             self.fetch_and_write_object_data(
@@ -282,7 +282,7 @@ class Component(ComponentBase):
             table_schema = self.get_table_schema_by_name(object_name)
             table_definition = self.create_out_table_definition_from_schema(table_schema, incremental=True)
             table_definition = self._add_columns_from_state_to_table_definition(object_name, table_definition)
-            writer = ElasticDictWriter(table_definition.full_path, table_definition.columns)
+            writer = ElasticDictWriter(table_definition.full_path, table_definition.column_names)
             self.result_writers[object_name] = {"table_definition": table_definition, "writer": writer}
 
     def _get_result_writer(self, object_name: str) -> ElasticDictWriter:
@@ -297,12 +297,28 @@ class Component(ComponentBase):
 
             writer_columns = copy.deepcopy(writer.fieldnames)
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
+            table_definition = self._add_missing_metadata(table_definition)
 
-            deduped_columns = table_definition.columns.copy()
+            deduped_columns = table_definition.column_names.copy()
             normalized_headers = self._normalize_headers(deduped_columns)
-            table_definition.columns = normalized_headers
+            table_definition.schema = normalized_headers
 
             self.write_manifest(table_definition)
+
+    @staticmethod
+    def _add_missing_metadata(table_definition: TableDefinition) -> TableDefinition:
+        """
+        This method is used to add dummy metadata to a column in cases where the metadata
+        is missing from the table definition. This can occur in some cases when old native types are enabled.
+        """
+        for column in table_definition.column_names:
+            if column not in table_definition.table_metadata.column_metadata.keys():
+                table_definition.table_metadata.column_metadata[column] = {
+                    'KBC.description': '',
+                    'KBC.datatype.basetype': 'STRING',
+                    'KBC.datatype.nullable': True}
+                logging.info(f"Creating dummy metadata for column {column}")
+        return table_definition
 
     @staticmethod
     def _normalize_headers(columns: List[str]) -> List[str]:
@@ -336,7 +352,7 @@ class Component(ComponentBase):
                     table_definition.table_metadata.column_metadata, column,
                     column_name)
             final_columns.append(column_name)
-        table_definition.columns = final_columns
+        table_definition.schema = final_columns
         return table_definition
 
     @staticmethod
