@@ -98,8 +98,10 @@ class KlaviyoClient:
 
     def get_metric(self, metric_id: str):
         try:
+            logging.info(f"Metric ID: {metric_id}")
             return self.client.Metrics.get_metric(metric_id)
         except OpenApiException as api_exc:
+            logging.info(f"{api_exc.__str__()}")
             error_message = self._process_error(api_exc)
             raise KlaviyoClientException(error_message) from api_exc
 
