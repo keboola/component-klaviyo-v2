@@ -9,6 +9,7 @@ from keboola.component.exceptions import UserException
 from klaviyo_api import KlaviyoAPI
 from openapi_client.exceptions import OpenApiException
 from openapi_client.models import MetricAggregateQuery
+from openapi_client.api_arg_options import USE_DICTIONARY_FOR_RESPONSE_DATA
 
 MAX_DELAY = 60
 MAX_RETRIES = 5
@@ -20,7 +21,11 @@ class KlaviyoClientException(Exception):
 
 class KlaviyoClient:
     def __init__(self, api_token: str):
-        self.client = KlaviyoAPI(api_token, max_delay=MAX_DELAY, max_retries=MAX_RETRIES)
+        self.client = KlaviyoAPI(
+            api_token,
+            max_delay=MAX_DELAY,
+            max_retries=MAX_RETRIES,
+            options={USE_DICTIONARY_FOR_RESPONSE_DATA: True})
 
     def get_metrics(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Metrics.get_metrics)
