@@ -299,8 +299,7 @@ class Component(ComponentBase):
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
 
             deduped_columns = table_definition.column_names.copy()
-            normalized_headers = self._normalize_headers(deduped_columns)
-            table_definition.schema = normalized_headers
+            table_definition.schema = self._normalize_headers(deduped_columns)
             table_definition = self._add_missing_metadata(table_definition)
 
             self.write_manifest(table_definition)
