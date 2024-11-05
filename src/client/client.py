@@ -104,6 +104,7 @@ class KlaviyoClient:
     def get_metric(self, metric_id: str):
         # try:
         logging.info(f"Metric ID: {metric_id}")
+        metric_id = metric_id.encode('utf-8').decode('utf-8')
         return self.client.Metrics.get_metric(metric_id)
 
         # except OpenApiException as api_exc:
