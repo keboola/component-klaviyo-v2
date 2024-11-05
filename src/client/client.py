@@ -102,13 +102,14 @@ class KlaviyoClient:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaign_campaign_messages, id=campaign_id)
 
     def get_metric(self, metric_id: str):
-        try:
-            logging.info(f"Metric ID: {metric_id}")
-            return self.client.Metrics.get_metric(metric_id)
-        except OpenApiException as api_exc:
-            logging.info(f"{api_exc.__str__()}")
-            error_message = self._process_error(api_exc)
-            raise KlaviyoClientException(error_message) from api_exc
+        # try:
+        logging.info(f"Metric ID: {metric_id}")
+        return self.client.Metrics.get_metric(metric_id)
+
+        # except OpenApiException as api_exc:
+        #    logging.info(f"{api_exc.__str__()}")
+        #    error_message = self._process_error(api_exc)
+        #    raise KlaviyoClientException(error_message) from api_exc
 
     def query_metric_aggregates(self,
                                 metric_id: str,
@@ -127,20 +128,20 @@ class KlaviyoClient:
                         "count",
                         "unique",
                         "sum_value"
-                        ],
+                    ],
                     "by": by,
                     "return_fields": None,
                     "filter": [
                         f"greater-or-equal(datetime,{datetime.fromtimestamp(from_timestamp).date()}T00:00:00)",
                         f"less-than(datetime,{datetime.fromtimestamp(to_timestamp).date()}T00:00:00)"
-                        ],
+                    ],
                     "metric_id": metric_id,
                     "sort": None
                 }
             }
         }
         for page in self._paginate_cursor_endpoint(
-            self.client.Metrics.query_metric_aggregates,
+                self.client.Metrics.query_metric_aggregates,
                 metric_aggregate_query=MetricAggregateQuery.from_dict(metric_aggregate_query)):
             yield self._normalize_aggregated_response(page, metric_id)
 
