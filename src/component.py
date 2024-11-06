@@ -414,7 +414,7 @@ class Component(ComponentBase):
                     self.client.get_metric(metric_id)
                 except KlaviyoClientException as e:
                     raise UserException(f"Metric with ID {metric_id} not found.") from e
-            logging.info("Metric aggregates parametrs are valid")
+            logging.info("Metric aggregates parameters are valid")
         # sync action that is executed when configuration.json "action":"testConnection" parameter is present.
 
     @sync_action('validate_connection')
