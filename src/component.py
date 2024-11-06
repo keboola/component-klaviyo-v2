@@ -107,6 +107,7 @@ class Component(ComponentBase):
     def _init_client(self):
         params = self.configuration.parameters
         api_token = params.get(KEY_API_TOKEN)
+        api_token = api_token.encode('utf-8').decode('utf-8')
         self.client = KlaviyoClient(api_token=api_token)
 
     def fetch_and_write_object_data(self, object_name: str, data_generator: Callable, **data_generator_kwargs) -> None:
