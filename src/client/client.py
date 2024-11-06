@@ -275,7 +275,7 @@ class KlaviyoClient:
                        "catalogs": self.client.Catalogs.get_catalog_items,
                        "events": self.client.Events.get_events,
                        "lists": self.client.Lists.get_lists,
-                       "metrics": self.client.Metrics.get_metrics,
+                       # "metrics": self.client.Metrics.get_metrics,
                        "profiles": self.client.Profiles.get_profiles,
                        "segments": self.client.Segments.get_segments
                        }
