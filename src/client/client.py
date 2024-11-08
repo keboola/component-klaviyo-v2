@@ -102,15 +102,11 @@ class KlaviyoClient:
         return self._paginate_cursor_endpoint(self.client.Campaigns.get_campaign_campaign_messages, id=campaign_id)
 
     def get_metric(self, metric_id: str):
-        # try:
-        logging.info(f"Metric ID: {metric_id}")
-        metric_id = metric_id.encode('utf-8').decode('utf-8')
-        return self.client.Metrics.get_metric(id=metric_id, _headers={"Accept": "application/json"})
-
-        # except OpenApiException as api_exc:
-        #    logging.info(f"{api_exc.__str__()}")
-        #    error_message = self._process_error(api_exc)
-        #    raise KlaviyoClientException(error_message) from api_exc
+        try:
+            return self.client.Metrics.get_metric(metric_id)
+        except OpenApiException as api_exc:
+            error_message = self._process_error(api_exc)
+            raise KlaviyoClientException(error_message) from api_exc
 
     def query_metric_aggregates(self,
                                 metric_id: str,
@@ -275,7 +271,7 @@ class KlaviyoClient:
                        "catalogs": self.client.Catalogs.get_catalog_items,
                        "events": self.client.Events.get_events,
                        "lists": self.client.Lists.get_lists,
-                       # "metrics": self.client.Metrics.get_metrics,
+                       "metrics": self.client.Metrics.get_metrics,
                        "profiles": self.client.Profiles.get_profiles,
                        "segments": self.client.Segments.get_segments
                        }
