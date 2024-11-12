@@ -9,6 +9,7 @@ from keboola.component.exceptions import UserException
 from klaviyo_api import KlaviyoAPI
 from openapi_client.exceptions import OpenApiException
 from openapi_client.models import MetricAggregateQuery
+from openapi_client.api_arg_options import USE_DICTIONARY_FOR_RESPONSE_DATA
 
 MAX_DELAY = 60
 MAX_RETRIES = 5
@@ -20,7 +21,11 @@ class KlaviyoClientException(Exception):
 
 class KlaviyoClient:
     def __init__(self, api_token: str):
-        self.client = KlaviyoAPI(api_token, max_delay=MAX_DELAY, max_retries=MAX_RETRIES)
+        self.client = KlaviyoAPI(
+            api_token,
+            max_delay=MAX_DELAY,
+            max_retries=MAX_RETRIES,
+            options={USE_DICTIONARY_FOR_RESPONSE_DATA: True})
 
     def get_metrics(self) -> Iterator[List[Dict]]:
         return self._paginate_cursor_endpoint(self.client.Metrics.get_metrics)
@@ -120,20 +125,20 @@ class KlaviyoClient:
                         "count",
                         "unique",
                         "sum_value"
-                        ],
+                    ],
                     "by": by,
                     "return_fields": None,
                     "filter": [
                         f"greater-or-equal(datetime,{datetime.fromtimestamp(from_timestamp).date()}T00:00:00)",
                         f"less-than(datetime,{datetime.fromtimestamp(to_timestamp).date()}T00:00:00)"
-                        ],
+                    ],
                     "metric_id": metric_id,
                     "sort": None
                 }
             }
         }
         for page in self._paginate_cursor_endpoint(
-            self.client.Metrics.query_metric_aggregates,
+                self.client.Metrics.query_metric_aggregates,
                 metric_aggregate_query=MetricAggregateQuery.from_dict(metric_aggregate_query)):
             yield self._normalize_aggregated_response(page, metric_id)
 

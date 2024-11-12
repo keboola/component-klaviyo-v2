@@ -263,7 +263,7 @@ class Component(ComponentBase):
                 from_timestamp=from_timestamp,
                 to_timestamp=to_timestamp,
                 by=by
-                )
+            )
 
     def _parse_date(self, date_to_parse: str) -> int:
         if date_to_parse.lower() in {"last", "lastrun", "last run"}:
@@ -297,11 +297,10 @@ class Component(ComponentBase):
 
             writer_columns = copy.deepcopy(writer.fieldnames)
             table_definition = self._deduplicate_column_names_and_metadata(table_definition, writer_columns)
-            table_definition = self._add_missing_metadata(table_definition)
 
             deduped_columns = table_definition.column_names.copy()
-            normalized_headers = self._normalize_headers(deduped_columns)
-            table_definition.schema = normalized_headers
+            table_definition.schema = self._normalize_headers(deduped_columns)
+            table_definition = self._add_missing_metadata(table_definition)
 
             self.write_manifest(table_definition)
 
@@ -317,7 +316,7 @@ class Component(ComponentBase):
                     'KBC.description': '',
                     'KBC.datatype.basetype': 'STRING',
                     'KBC.datatype.nullable': True}
-                logging.info(f"Creating dummy metadata for column {column}")
+                logging.info(f"Creating dummy metadata for column {column} in table {table_definition.name}")
         return table_definition
 
     @staticmethod
@@ -415,7 +414,7 @@ class Component(ComponentBase):
                     self.client.get_metric(metric_id)
                 except KlaviyoClientException as e:
                     raise UserException(f"Metric with ID {metric_id} not found.") from e
-            logging.info("Metric aggregates parametrs are valid")
+            logging.info("Metric aggregates parameters are valid")
         # sync action that is executed when configuration.json "action":"testConnection" parameter is present.
 
     @sync_action('validate_connection')
