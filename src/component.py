@@ -129,6 +129,12 @@ class Component(ComponentBase):
                 else:
                     parsed_attributes = parser.parse_row(item["attributes"])
 
+                # Extract metric_id from relationships for events
+                if "relationships" in item and "metric" in item.get("relationships", {}):
+                    metric_data = item["relationships"]["metric"].get("data")
+                    if metric_data and "id" in metric_data:
+                        parsed_attributes["metric_id"] = metric_data["id"]
+
                 row = {"id": item["id"], **parsed_attributes, **extra_data}
 
                 self._get_result_writer(object_name).writerow(row)
