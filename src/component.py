@@ -235,12 +235,14 @@ class Component(ComponentBase):
         elif fetch_profiles_mode == "fetch_by_segment":
             segments = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, [])
             for segment_id in segments:
+                segment_id = segment_id.split(" (")[0].strip()
                 self.fetch_and_write_object_data("segment_profile", self.client.get_segment_profiles,
                                                  segment_id=segment_id)
 
         elif fetch_profiles_mode == "fetch_by_list":
             lists = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, [])
             for list_id in lists:
+                list_id = list_id.split(" (")[0].strip()
                 self.fetch_and_write_object_data("list_profile", self.client.get_list_profiles, list_id=list_id)
 
     def get_flows(self) -> None:
@@ -261,6 +263,7 @@ class Component(ComponentBase):
         by = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTING_BY)
 
         for id in ids:
+            id = id.split(" (")[0].strip().strip()
             self.fetch_and_write_object_data(
                 "metric_aggregates",
                 self.client.query_metric_aggregates,
@@ -396,6 +399,7 @@ class Component(ComponentBase):
             logging.info("Validating Profile fetching parameters...")
             segments = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_SEGMENT, [])
             for segment_id in segments:
+                segment_id = segment_id.split(" (")[0].strip()
                 try:
                     self.client.get_segment(segment_id)
                 except KlaviyoClientException as e:
@@ -407,6 +411,7 @@ class Component(ComponentBase):
             logging.info("Validating Profile fetching parameters...")
             lists = profile_settings.get(KEY_PROFILES_SETTINGS_FETCH_BY_LIST, [])
             for list_id in lists:
+                list_id = list_id.split(" (")[0].strip()
                 self.client.get_list(list_id)
             logging.info("Profile fetching parameters are valid")
 
@@ -416,6 +421,7 @@ class Component(ComponentBase):
             metric_aggregates_ids = metric_aggregates_settings.get(KEY_METRIC_AGGREGATES_SETTINGS_METRIC_IDS)
             logging.info("Validating metric aggregates parametrs...")
             for metric_id in metric_aggregates_ids:
+                metric_id = metric_id.split(" (")[0].strip()
                 try:
                     self.client.get_metric(metric_id)
                 except KlaviyoClientException as e:
@@ -454,7 +460,7 @@ class Component(ComponentBase):
         self._init_client()
         try:
             list_ids = self.client.get_list_ids()
-            r = [SelectElement(value=list_id.get("id"), label=json.dumps(list_id.get("name"))) for list_id in list_ids]
+            r = [SelectElement(f"{list_id.get("id")} ({list_id.get("name")})") for list_id in list_ids]
         except Exception as e:
             raise UserException(e) from e
         return r
@@ -464,7 +470,7 @@ class Component(ComponentBase):
         self._init_client()
         try:
             segment_ids = self.client.get_segment_ids()
-            r = [SelectElement(value=segment_id.get("id"), label=json.dumps(segment_id.get("name")))
+            r = [SelectElement(f"{segment_id.get("id")} ({segment_id.get("name")})")
                  for segment_id in segment_ids]
         except Exception as e:
             raise UserException(e) from e
@@ -475,7 +481,7 @@ class Component(ComponentBase):
         self._init_client()
         try:
             metric_ids = self.client.get_metric_ids()
-            r = [SelectElement(value=metric_id.get("id"), label=json.dumps(metric_id.get("name")))
+            r = [SelectElement(f"{metric_id.get("id")} ({metric_id.get("name")})")
                  for metric_id in metric_ids]
         except Exception as e:
             raise UserException(e) from e
