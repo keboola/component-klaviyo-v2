@@ -240,7 +240,8 @@
             },
             "async": {
               "label": "Load List IDs",
-              "action": "loadListIds"
+              "action": "loadListIds",
+              "autoload": []
             }
           }
         },
@@ -261,7 +262,8 @@
             },
             "async": {
               "label": "Load Segment IDs",
-              "action": "loadSegmentIds"
+              "action": "loadSegmentIds",
+              "autoload": []
             }
           }
         }
@@ -291,7 +293,8 @@
           "options": {
             "async": {
               "label": "Load Metric IDs",
-              "action": "loadMetricIds"
+              "action": "loadMetricIds",
+              "autoload": []
             }
           }
         },
