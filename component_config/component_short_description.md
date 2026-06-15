@@ -1,1 +1,1 @@
-A marketing automation platform, used primarily for email marketing and SMS marketing. 
+Extracts campaigns, profiles, metrics, events, and flows from Klaviyo.
